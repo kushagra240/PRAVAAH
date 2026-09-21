@@ -10,17 +10,17 @@ const DEMO_STEPS = [
   {
     step: 2,
     title: "2. Hazard Screening",
-    desc: "Holland wind field (140 km/h) & parametric surge screening (3.2m)."
+    desc: "Holland wind field (144.1 km/h) & parametric surge screening (3.78m)."
   },
   {
     step: 3,
     title: "3. Road Graph Cascade",
-    desc: "Flooded edge removal on SH-60 causeway & multi-source Dijkstra solve."
+    desc: "Flooded edge removal on low-lying crossings & multi-source Dijkstra solve."
   },
   {
     step: 4,
     title: "4. Accessibility Impact",
-    desc: "184,000 population access loss & 4 isolated public health facilities."
+    desc: "338,683 population flood exposure & 94 isolated public health facilities."
   },
   {
     step: 5,

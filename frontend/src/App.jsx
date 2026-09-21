@@ -120,22 +120,22 @@ export default function App() {
       runSimulation(selectedTrack || tracks[0], {});
       setSelectedAsset(null);
     } else if (stateId === 2) {
-      // 2. Hospital Selected State (Rajnagar CHC)
-      const rajnagar = (regionData?.health_facilities || []).find(f => f.name?.includes('Rajnagar')) || {
-        name: 'Rajnagar CHC',
+      // 2. Hospital Selected State (PHC Sanatpur IMPASSABLE / CHC Rajnagar DEGRADED)
+      const sanatpur = (regionData?.health_facilities || []).find(f => f.name?.includes('Sanatpur')) || {
+        name: 'PHC, Sanatpur',
         asset_type: 'hospital',
-        type: 'Community Health Centre',
-        bed_capacity: 30,
-        elevation_m: 2.1
+        type: 'Primary Health Centre',
+        bed_capacity: 10,
+        elevation_m: 5.0
       };
-      setSelectedAsset({ ...rajnagar, asset_type: 'hospital' });
+      setSelectedAsset({ ...sanatpur, asset_type: 'hospital' });
     } else if (stateId === 3) {
-      // 3. Road Cut Selected (SH-9A Breach)
-      const breach = (simResult?.cascade?.broken_road_edges || []).find(e => e.name?.includes('SH-9A') || e.name?.includes('Causeway')) || {
-        name: 'SH-9A Maitapur Causeway',
+      // 3. Road Cut Selected (Impassable Causeway Sector)
+      const breach = (simResult?.cascade?.broken_road_edges || []).find(e => e.impassable || e.name?.includes('Bridge') || e.name?.includes('Causeway')) || {
+        name: 'Kendrapara Low-Lying Causeway Sector',
         asset_type: 'road',
-        highway: 'state_highway',
-        length_km: 14.2
+        highway: 'primary',
+        length_km: 4.8
       };
       setSelectedAsset({ ...breach, asset_type: 'road' });
     } else if (stateId === 5) {

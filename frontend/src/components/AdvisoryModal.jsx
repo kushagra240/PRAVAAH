@@ -6,11 +6,11 @@ export default function AdvisoryModal({ isOpen, onClose }) {
 
   const [statusStep, setStatusStep] = useState('DRAFT'); // DRAFT, REVIEW, APPROVED, DISPATCHED
   const [advisoryId, setAdvisoryId] = useState(null);
-  const [advisoryTitle, setAdvisoryTitle] = useState('PRE-POSITION RESCUE BOATS AT CHANDBALI & PROTECT RAJNAGAR CHC ACCESS');
+  const [advisoryTitle, setAdvisoryTitle] = useState('PRE-POSITION RESCUE BOATS AT CHANDBALI & PROTECT SANATPUR / TANGI / RAJNAGAR ACCESS');
   const [advisoryContent, setAdvisoryContent] = useState(
     '1. Pre-position 4 inflatable motorboats at Chandbali Staging Depot before T-14h.\n' +
-    '2. Direct ambulance rerouting for Rajnagar CHC via SH-60 Western Bypass.\n' +
-    '3. Issue flood caution alert for Maitapur Levee Breach sector (SH-9A).'
+    '2. Direct watercraft rescue for PHC Sanatpur & UGPHC Tangi under Total Road Isolation.\n' +
+    '3. Issue travel caution & delay rerouting alert for CHC Rajnagar feeder routes (+28m delay).'
   );
 
   const steps = ['DRAFT', 'REVIEW', 'APPROVED', 'DISPATCHED'];

@@ -13,20 +13,20 @@ export default function DeltaComparison({ baselineResult, scenarioResult }) {
   const baseCascade = baselineResult?.cascade || {};
   const scnCascade = scenarioResult?.cascade || {};
 
-  const basePop = baseCascade.population_losing_30min_access || 184000;
-  const scnPop = scnCascade.population_losing_30min_access || 184000;
+  const basePop = baselineResult?.exposure?.pop_exposed_high_flood || baseCascade.population_losing_30min_access || 338683;
+  const scnPop = scenarioResult?.exposure?.pop_exposed_high_flood || scnCascade.population_losing_30min_access || 338683;
   const popDelta = scnPop - basePop;
 
-  const baseFac = baseCascade.isolated_facilities_count || 4;
-  const scnFac = scnCascade.isolated_facilities_count || 4;
+  const baseFac = baseCascade.isolated_facilities_count || 94;
+  const scnFac = scnCascade.isolated_facilities_count || 94;
   const facDelta = scnFac - baseFac;
 
-  const baseRoad = baseCascade.broken_road_edges_count || 12;
-  const scnRoad = scnCascade.broken_road_edges_count || 12;
+  const baseRoad = baseCascade.impassable_edges_count || baseCascade.broken_road_edges_count || 1448;
+  const scnRoad = scnCascade.impassable_edges_count || scnCascade.broken_road_edges_count || 1448;
   const roadDelta = scnRoad - baseRoad;
 
-  const baseSurge = baselineResult?.peak_surge_m || 3.2;
-  const scnSurge = scenarioResult?.peak_surge_m || 3.2;
+  const baseSurge = baselineResult?.peak_surge_m || 3.78;
+  const scnSurge = scenarioResult?.peak_surge_m || 3.78;
   const surgeDelta = scnSurge - baseSurge;
 
   return (

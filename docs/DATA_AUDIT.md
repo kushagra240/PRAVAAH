@@ -45,8 +45,8 @@
 | Asset File | Active Local Implementation | Provenance Class | Audit Note |
 |---|---|---|---|
 | `feature_cube.parquet` | Synthetically sampled H3 r8 spatial grid (`build_odisha_cube.py`) | `FIXTURE` / `SYNTHETIC` | Terrain (`elev_mean`, `hand_m`, `twi`) and population density generated synthetically using seeded random distributions for fast local demo execution. |
-| `road_network.json` | Real OpenStreetMap road graph (Retrieved 2026-09-20) | `OBSERVED` | Real road network graph for Bhadrak + Kendrapara bounding box (45,750 nodes, 5,744 edges, 3,668 bridges, 1 ford/causeway). Backup retained as `road_network_synthetic_backup.json`. |
-| `health_facilities.json` | Real OpenStreetMap health facilities (Retrieved 2026-09-20) | `OBSERVED` | 825 real geocoded health facilities (`amenity=hospital|clinic|doctors`) for Bhadrak + Kendrapara (including CHC Rajnagar and CHC Chandbali). Backup retained as `health_facilities_synthetic_backup.json`. |
+| `road_network.json` | Real OpenStreetMap noded road graph (Retrieved 2026-09-21) | `OBSERVED` | Real routable road network graph for Bhadrak + Kendrapara (12,813 nodes, 15,544 edges, 0.82:1 node:edge ratio, 1,988 bridges = 12.79%, 1 ford/causeway). Intersection-noded via drivable highway extraction. |
+| `health_facilities.json` | Real OpenStreetMap health facilities (Retrieved 2026-09-21) | `OBSERVED` | 825 real geocoded health facilities (`amenity=hospital|clinic|doctors`) for Bhadrak + Kendrapara (including CHC Rajnagar and CHC Chandbali). Backup retained as `health_facilities_synthetic_backup.json`. |
 | `cyclone_shelters.json` | Synthetic cyclone shelter list (`build_odisha_cube.py`) | `FIXTURE` | 20 multi-purpose cyclone shelter records sampled from grid blocks. |
 
 ---
@@ -59,8 +59,8 @@
 | **Wind Field** | Holland (1980) Parametric Radial Model (`HollandWindModel`) | `DERIVED` | High-resolution WRF numerical reanalysis |
 | **Surge Height** | Parametric Bathymetric Attenuation (`ParametricSurgeModel`) | `DERIVED` | ADCIRC / SLOSH numerical hydrodynamic model |
 | **Flood Probability** | Heuristic Logit Screening (`HeuristicFloodScreeningModel`) | `ASSUMPTION` | Supervised XGBoost trained on Sentinel-1 SAR change detection inundation labels (§9.4) |
-| **Road Network & Accessibility** | Multi-source Dijkstra Solver (`RoadGraphCascadeEngine`) | `DERIVED` (on `OBSERVED` graph) | OSMnx / Geofabrik OpenStreetMap PBF network dump |
+| **Road Network & Accessibility** | Multi-source Dijkstra Solver (§12.3 3-State Model: `RoadGraphCascadeEngine`) | `DERIVED` (on `OBSERVED` graph) | OSMnx / Geofabrik OpenStreetMap PBF network dump |
 | **AI Situation Brief** | Gemini 3.7 Flash + `CitationValidator` | `DERIVED` / `ASSUMPTION` | Live Gemini 3.7 Flash API key in `.env` |
 | **Advisory Workflow** | Human-in-the-Loop State Machine + OASIS CAP 1.2 XML | `DERIVED` | SEOC Emergency Gateway Integration |
 
-> **Critical Path Audit Status**: The flood probability model (`HeuristicFloodScreeningModel`) remains the **ONLY** `ASSUMPTION`-tagged component in the critical calculation path. Road network topology (`road_network.json`) and health facility locations (`health_facilities.json`) have been promoted from `FIXTURE` to `OBSERVED` using verified OpenStreetMap data.
+> **Critical Path Audit Status**: The flood probability model (`HeuristicFloodScreeningModel`) remains the **ONLY** `ASSUMPTION`-tagged component in the critical calculation path. Road network topology (`road_network.json`) is properly intersection-noded (12,813 nodes : 15,544 edges) and health facility locations (`health_facilities.json`) are promoted from `FIXTURE` to `OBSERVED` using verified OpenStreetMap data.

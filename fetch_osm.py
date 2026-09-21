@@ -101,14 +101,14 @@ out center;"""
     return facilities
 
 def extract_real_road_network():
-    print("2. Extracting real road network, bridges, causeways from OpenStreetMap...")
+    print("2. Extracting real drivable road network with intersection noding from OpenStreetMap...")
     query = f"""[out:json][timeout:45];
 (
   way["highway"="primary"]({BBOX});
   way["highway"="secondary"]({BBOX});
+  way["highway"="tertiary"]({BBOX});
   way["highway"="trunk"]({BBOX});
-  way["bridge"="yes"]({BBOX});
-  way["ford"="yes"]({BBOX});
+  way["highway"="unclassified"]({BBOX});
 );
 out body;
 >;
@@ -125,40 +125,38 @@ out skel qt;"""
         elif elem["type"] == "way":
             ways.append(elem)
 
-    print(f"Retrieved {len(nodes_dict)} raw nodes and {len(ways)} road ways from OSM.")
+    print(f"Retrieved {len(nodes_dict)} raw nodes and {len(ways)} drivable road ways from OSM.")
 
-    nodes_list = []
-    node_id_map = {}
-    
-    # Store nodes
-    for n_id, (lat, lon) in nodes_dict.items():
-        node_str = f"OSM_NODE_{n_id}"
-        node_id_map[n_id] = node_str
-        
-        if lat < 20.1:
-            block = "Puri Sadar"
-        elif lat < 20.4:
-            block = "Paradip" if lon > 86.6 else "Jagatsinghpur Sadar"
-        elif lat < 20.7:
-            block = "Rajnagar" if lon > 86.6 else "Kendrapara Sadar"
-        else:
-            block = "Chandbali" if lon > 86.6 else "Bhadrak Sadar"
+    # Step 1: Count node occurrences across all drivable ways
+    node_counts = {}
+    for w in ways:
+        for n_id in w.get("nodes", []):
+            node_counts[n_id] = node_counts.get(n_id, 0) + 1
 
-        nodes_list.append({
-            "node_id": node_str,
-            "block": block,
-            "lat": round(lat, 6),
-            "lon": round(lon, 6),
-            "osm_id": n_id,
-            "provenance_class": "OBSERVED",
-            "source": f"OpenStreetMap, retrieved {time.strftime('%Y-%m-%d')}"
-        })
+    # Step 2: Identify true intersection & terminal nodes
+    intersection_nodes = set()
+    for w in ways:
+        w_nodes = w.get("nodes", [])
+        if not w_nodes:
+            continue
+        intersection_nodes.add(w_nodes[0])
+        intersection_nodes.add(w_nodes[-1])
+        for n_id in w_nodes:
+            if node_counts[n_id] >= 2:
+                intersection_nodes.add(n_id)
 
-    edges_list = []
-    causeways_found = []
+    print(f"Identified {len(intersection_nodes)} true intersection / terminal graph nodes.")
+
+    # Step 3: Build graph nodes and split ways into edges at intersections
+    graph_nodes = []
+    graph_node_set = set()
+    graph_edges = []
     bridges_found = []
+    causeways_found = []
 
-    for idx, way in enumerate(ways):
+    VALID_BRIDGE_SUBTYPES = {"yes", "viaduct", "aqueduct", "suspension", "movable", "overpass"}
+
+    for way in ways:
         w_nodes = way.get("nodes", [])
         if len(w_nodes) < 2:
             continue
@@ -166,41 +164,81 @@ out skel qt;"""
         tags = way.get("tags", {})
         highway = tags.get("highway", "secondary")
         name = tags.get("name") or tags.get("ref") or f"OSM Road {way['id']}"
-        is_bridge = tags.get("bridge") == "yes"
+        bridge_tag = str(tags.get("bridge", "")).lower()
+        is_bridge = bridge_tag in VALID_BRIDGE_SUBTYPES
         is_ford = tags.get("ford") == "yes"
         is_causeway = is_ford or "causeway" in name.lower() or "levee" in name.lower()
         
-        if is_causeway:
-            causeways_found.append((name, way["id"]))
-        if is_bridge:
-            bridges_found.append((name, way["id"]))
-
-        u_id = node_id_map[w_nodes[0]]
-        v_id = node_id_map[w_nodes[-1]]
+        seg_start = w_nodes[0]
+        seg_length = 0.0
         
-        lat1, lon1 = nodes_dict[w_nodes[0]]
-        lat2, lon2 = nodes_dict[w_nodes[-1]]
-        dist_km = max(0.1, round((((lat2 - lat1)*111.0)**2 + ((lon2 - lon1)*100.0)**2)**0.5, 2))
-        
-        edges_list.append({
-            "edge_id": f"OSM_EDGE_{idx+1:04d}",
-            "u": u_id,
-            "v": v_id,
-            "highway": highway,
-            "name": name,
-            "length_km": dist_km,
-            "speed_kph": 60.0 if highway == "primary" else 40.0,
-            "is_causeway": is_causeway,
-            "is_bridge": is_bridge,
-            "osm_id": way["id"],
-            "provenance_class": "OBSERVED",
-            "source": f"OpenStreetMap, retrieved {time.strftime('%Y-%m-%d')}"
-        })
+        for i in range(1, len(w_nodes)):
+            prev_n = w_nodes[i-1]
+            curr_n = w_nodes[i]
+            
+            if prev_n in nodes_dict and curr_n in nodes_dict:
+                lat1, lon1 = nodes_dict[prev_n]
+                lat2, lon2 = nodes_dict[curr_n]
+                d_km = (((lat2 - lat1)*111.0)**2 + ((lon2 - lon1)*100.0)**2)**0.5
+                seg_length += d_km
+                
+            if curr_n in intersection_nodes or i == len(w_nodes) - 1:
+                u_str = f"OSM_NODE_{seg_start}"
+                v_str = f"OSM_NODE_{curr_n}"
+                
+                graph_node_set.add(seg_start)
+                graph_node_set.add(curr_n)
+                
+                if is_bridge:
+                    bridges_found.append((name, way["id"]))
+                if is_causeway:
+                    causeways_found.append((name, way["id"]))
+                    
+                graph_edges.append({
+                    "edge_id": f"OSM_EDGE_{len(graph_edges)+1:05d}",
+                    "u": u_str,
+                    "v": v_str,
+                    "highway": highway,
+                    "name": name,
+                    "length_km": max(0.01, round(seg_length, 3)),
+                    "speed_kph": 60.0 if highway in ["primary", "trunk"] else 40.0,
+                    "is_causeway": is_causeway,
+                    "is_bridge": is_bridge,
+                    "osm_id": way["id"],
+                    "provenance_class": "OBSERVED",
+                    "source": f"OpenStreetMap, retrieved {time.strftime('%Y-%m-%d')}"
+                })
+                
+                seg_start = curr_n
+                seg_length = 0.0
 
-    print(f"Summary: {len(nodes_list)} nodes, {len(edges_list)} edges.")
-    print(f"Bridges found in OSM: {len(bridges_found)}, Causeways/Fords: {len(causeways_found)}.")
+    # Build node objects for used intersection nodes
+    for n_id in graph_node_set:
+        if n_id in nodes_dict:
+            lat, lon = nodes_dict[n_id]
+            if lat < 20.1:
+                block = "Puri Sadar"
+            elif lat < 20.4:
+                block = "Paradip" if lon > 86.6 else "Jagatsinghpur Sadar"
+            elif lat < 20.7:
+                block = "Rajnagar" if lon > 86.6 else "Kendrapara Sadar"
+            else:
+                block = "Chandbali" if lon > 86.6 else "Bhadrak Sadar"
 
-    return {"nodes": nodes_list, "edges": edges_list}, bridges_found, causeways_found
+            graph_nodes.append({
+                "node_id": f"OSM_NODE_{n_id}",
+                "block": block,
+                "lat": round(lat, 6),
+                "lon": round(lon, 6),
+                "osm_id": n_id,
+                "provenance_class": "OBSERVED",
+                "source": f"OpenStreetMap, retrieved {time.strftime('%Y-%m-%d')}"
+            })
+
+    print(f"Summary: {len(graph_nodes)} nodes, {len(graph_edges)} edges (Node:Edge ratio {len(graph_nodes)/len(graph_edges):.2f}:1).")
+    print(f"Bridges tagged (`bridge=yes`): {len(bridges_found)} ({len(bridges_found)/len(graph_edges)*100:.2f}%), Causeways/Fords: {len(causeways_found)}.")
+
+    return {"nodes": graph_nodes, "edges": graph_edges}, bridges_found, causeways_found
 
 if __name__ == "__main__":
     facs = extract_real_health_facilities()
@@ -212,4 +250,11 @@ if __name__ == "__main__":
     with open("real_road_network.json", "w") as f:
         json.dump(net, f, indent=2)
         
-    print(f"Exported real_health_facilities.json ({len(facs)} facilities) and real_road_network.json ({len(net['nodes'])} nodes, {len(net['edges'])} edges).")
+    region_dir = os.path.join(os.path.dirname(__file__), "regions", "odisha_coastal")
+    with open(os.path.join(region_dir, "health_facilities.json"), "w") as f:
+        json.dump(facs, f, indent=2)
+        
+    with open(os.path.join(region_dir, "road_network.json"), "w") as f:
+        json.dump(net, f, indent=2)
+        
+    print(f"Exported updated health facilities ({len(facs)}) and noded road network ({len(net['nodes'])} nodes, {len(net['edges'])} edges) to root and region directories.")

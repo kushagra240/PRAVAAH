@@ -3,13 +3,15 @@ import numpy as np
 import pandas as pd
 from scipy.sparse import csr_matrix
 from scipy.sparse.csgraph import dijkstra
+from scipy.spatial import cKDTree
 from typing import List, Dict, Any, Tuple
 
 class RoadGraphCascadeEngine:
     """
     High-performance road network cascade engine.
     Solves multi-source Dijkstra travel times across OpenStreetMap road networks 
-    to quantify hospital reachability loss and isolated population counts under flooding.
+    to quantify hospital reachability loss and isolated population counts under flooding,
+    implementing §12.3 Three-State Edge Passability (OPEN, DEGRADED, IMPASSABLE).
     """
     def __init__(self, road_network_path: str):
         with open(road_network_path, "r") as f:
@@ -25,21 +27,25 @@ class RoadGraphCascadeEngine:
     def _build_adjacency_matrix(self, 
                                 df_cube: pd.DataFrame, 
                                 flood_prob: np.ndarray, 
-                                flood_threshold: float = 0.50) -> csr_matrix:
+                                theta_low: float = 0.30,
+                                theta_high: float = 0.60,
+                                theta_causeway: float = 0.35) -> csr_matrix:
         """
-        Builds sparse CSR graph adjacency matrix where edge weights are travel times in minutes.
-        Flooded edges (flood_prob > threshold or overtopped causeways) are set to infinity (impassable).
+        Builds sparse CSR graph adjacency matrix using §12.3 Three-State Passability:
+        - OPEN (p < theta_low): Base travel time in minutes.
+        - DEGRADED (theta_low <= p < theta_high): 2.5x travel time penalty due to standing water/debris.
+        - IMPASSABLE (p >= theta_high or overtopped causeway): Impassable (infinite weight).
         """
         rows = []
         cols = []
         data = []
         
-        from scipy.spatial import cKDTree
-
         cell_coords = df_cube[["lat", "lon"]].values
         tree = cKDTree(cell_coords)
         node_coords = np.array([[n.get("lat", 0.0), n.get("lon", 0.0)] for n in self.nodes])
         _, node_cell_indices = tree.query(node_coords)
+        
+        cell_map = {row["h3_r8"]: idx for idx, row in df_cube.iterrows()}
         
         for edge in self.edges:
             u_idx = self.node_id_to_idx.get(edge["u"])
@@ -52,15 +58,17 @@ class RoadGraphCascadeEngine:
             cell_idx = cell_map.get(h3_id) if h3_id else node_cell_indices[u_idx]
             edge_flood_p = float(flood_prob[cell_idx]) if cell_idx is not None else 0.0
             
-            # Is edge overtopped / flooded?
-            is_flooded = (edge_flood_p >= flood_threshold) or (edge.get("is_causeway") and edge_flood_p > 0.35)
+            # 3-State Classification
+            is_impassable = (edge_flood_p >= theta_high) or (edge.get("is_causeway") and edge_flood_p > theta_causeway)
+            is_degraded = not is_impassable and (edge_flood_p >= theta_low)
             
-            if not is_flooded:
+            if not is_impassable:
                 # Travel time in minutes
-                travel_time_min = (edge["length_km"] / edge["speed_kph"]) * 60.0
+                base_time_min = (edge["length_km"] / edge["speed_kph"]) * 60.0
+                tt = base_time_min * 2.5 if is_degraded else base_time_min
                 rows.extend([u_idx, v_idx])
                 cols.extend([v_idx, u_idx])
-                data.extend([travel_time_min, travel_time_min])
+                data.extend([tt, tt])
                 
         # Self-loops for diagonal
         for idx in range(self.n_nodes):
@@ -73,17 +81,18 @@ class RoadGraphCascadeEngine:
     def solve_accessibility_loss(self, 
                                 df_cube: pd.DataFrame, 
                                 health_facilities: List[Dict[str, Any]], 
-                                flood_prob: np.ndarray) -> Dict[str, Any]:
+                                flood_prob: np.ndarray,
+                                theta_low: float = 0.30,
+                                theta_high: float = 0.60,
+                                theta_causeway: float = 0.35) -> Dict[str, Any]:
         """
-        Computes baseline vs flooded Dijkstra shortest-path travel times 
+        Computes baseline vs 3-state flooded Dijkstra shortest-path travel times 
         from nodes to health facilities.
         """
-        from scipy.spatial import cKDTree
-
         # Baseline sparse adjacency (no flooding)
-        cs_baseline = self._build_adjacency_matrix(df_cube, np.zeros_like(flood_prob))
-        # Flooded sparse adjacency
-        cs_flooded = self._build_adjacency_matrix(df_cube, flood_prob)
+        cs_baseline = self._build_adjacency_matrix(df_cube, np.zeros_like(flood_prob), theta_low, theta_high, theta_causeway)
+        # Flooded 3-State sparse adjacency
+        cs_flooded = self._build_adjacency_matrix(df_cube, flood_prob, theta_low, theta_high, theta_causeway)
         
         # Spatial nearest node lookup for facilities
         node_coords = np.array([[n.get("lat", 0.0), n.get("lon", 0.0)] for n in self.nodes])
@@ -99,10 +108,11 @@ class RoadGraphCascadeEngine:
         dist_baseline = dist_baseline_u[inv_map]
         dist_flooded = dist_flooded_u[inv_map]
         
-        # Map node to nearest H3 cell for broken edge detection
+        # Map node to nearest H3 cell for edge passability classification
         cell_coords = df_cube[["lat", "lon"]].values
         cell_tree = cKDTree(cell_coords)
         _, node_cell_indices = cell_tree.query(node_coords)
+        cell_map = {row["h3_r8"]: idx for idx, row in df_cube.iterrows()}
         
         # Population reachability calculation across representative block nodes
         pop_loss_30min = 0
@@ -135,29 +145,46 @@ class RoadGraphCascadeEngine:
             if reachable_nodes <= 1:
                 isolated_hospitals.append(fac.get("name", f"Facility {idx+1}"))
                 
-        # Cut road edge count
-        cell_map = {row["h3_r8"]: idx for idx, row in df_cube.iterrows()}
+        # 3-State Edge Passability Breakdown
+        open_edges_cnt = 0
+        degraded_edges_cnt = 0
+        impassable_edges_cnt = 0
         broken_edges = []
+
         for edge in self.edges:
             u_idx = self.node_id_to_idx.get(edge["u"])
             h3_id = edge.get("h3_r8")
             cell_idx = cell_map.get(h3_id) if h3_id else (node_cell_indices[u_idx] if u_idx is not None else None)
             p = float(flood_prob[cell_idx]) if cell_idx is not None else 0.0
-            if p >= 0.50 or (edge.get("is_causeway") and p > 0.35):
+            
+            is_imp = (p >= theta_high) or (edge.get("is_causeway") and p > theta_causeway)
+            is_deg = not is_imp and (p >= theta_low)
+            
+            if is_imp:
+                impassable_edges_cnt += 1
                 broken_edges.append({
                     "edge_id": edge["edge_id"],
                     "name": edge["name"],
                     "highway": edge["highway"],
                     "length_km": edge["length_km"],
                     "is_causeway": edge.get("is_causeway", False),
-                    "flood_probability": round(p, 3)
+                    "flood_probability": round(p, 3),
+                    "status": "IMPASSABLE"
                 })
+            elif is_deg:
+                degraded_edges_cnt += 1
+            else:
+                open_edges_cnt += 1
                 
         return {
             "population_losing_30min_access": pop_loss_30min,
             "population_losing_60min_access": pop_loss_60min,
             "isolated_facilities_count": len(isolated_hospitals),
             "isolated_facility_names": isolated_hospitals,
-            "broken_road_edges_count": len(broken_edges),
+            "total_edges": len(self.edges),
+            "open_edges_count": open_edges_cnt,
+            "degraded_edges_count": degraded_edges_cnt,
+            "impassable_edges_count": impassable_edges_cnt,
+            "broken_road_edges_count": impassable_edges_cnt,
             "broken_road_edges": broken_edges
         }

@@ -44,7 +44,7 @@
 
 | Asset File | Active Local Implementation | Provenance Class | Audit Note |
 |---|---|---|---|
-| `feature_cube.parquet` | Synthetically sampled H3 r8 spatial grid (`build_odisha_cube.py`) | `FIXTURE` / `SYNTHETIC` | Terrain (`elev_mean`, `hand_m`, `twi`) and population density generated synthetically using seeded random distributions for fast local demo execution. |
+| `feature_cube.parquet` | Real Open-Meteo Elevation (`elev_mean`, `elev_min`, `hand_m`, `dist_coast_m`) + Synthetic Features (`twi`, `population`, `landcover`) | `PARTIAL OBSERVED` (`elev_*`: `OBSERVED`, rest: `FIXTURE`) | Elevation attributes (`elev_mean`, `elev_min`, `hand_m`, `dist_coast_m`) updated with real Open-Meteo API values (0.0m–15.0m coastal plain, CHC Rajnagar real elev 2.0m). Other columns remain synthetic fixtures. |
 | `road_network.json` | Real OpenStreetMap noded road graph (Retrieved 2026-09-21) | `OBSERVED` | Real routable road network graph for Bhadrak + Kendrapara (12,813 nodes, 15,544 edges, 0.82:1 node:edge ratio, 1,988 bridges = 12.79%, 1 ford/causeway). Intersection-noded via drivable highway extraction. |
 | `health_facilities.json` | Real OpenStreetMap health facilities (Retrieved 2026-09-21) | `OBSERVED` | 825 real geocoded health facilities (`amenity=hospital|clinic|doctors`) for Bhadrak + Kendrapara (including CHC Rajnagar and CHC Chandbali). Backup retained as `health_facilities_synthetic_backup.json`. |
 | `cyclone_shelters.json` | Synthetic cyclone shelter list (`build_odisha_cube.py`) | `FIXTURE` | 20 multi-purpose cyclone shelter records sampled from grid blocks. |

@@ -44,48 +44,60 @@ export default function ContextInspectorPanel({
           </div>
 
           <div>
-            <h3 className="text-lg font-bold text-slate-900 leading-tight">RAJNAGAR CHC</h3>
-            <p className="text-xs text-slate-500">Community Health Centre · Kendrapara Block</p>
+            <h3 className="text-lg font-bold text-slate-900 leading-tight">
+              {selectedAsset?.name || 'PHC, SANATPUR'}
+            </h3>
+            <p className="text-xs text-slate-500">
+              {selectedAsset?.name?.includes('Rajnagar') ? 'Community Health Centre · Rajnagar Block (DEGRADED)' : 'Primary Health Centre · Kendrapara Sadar (IMPASSABLE)'}
+            </p>
           </div>
 
-          <div className="bg-red-50 border border-red-200 rounded-md p-3 space-y-2">
-            <div className="text-[10px] font-bold tracking-wider text-red-700 uppercase font-mono">STATUS</div>
-            <div className="text-sm font-bold text-red-900 flex items-center justify-between">
-              <span>Degraded access</span>
-              <span className="px-2 py-0.5 rounded bg-red-600 text-white text-[10px]">SEVERE</span>
+          <div className={`${selectedAsset?.name?.includes('Rajnagar') ? 'bg-amber-50 border-amber-200' : 'bg-red-50 border-red-200'} border rounded-md p-3 space-y-2`}>
+            <div className={`text-[10px] font-bold tracking-wider ${selectedAsset?.name?.includes('Rajnagar') ? 'text-amber-700' : 'text-red-700'} uppercase font-mono`}>STATUS</div>
+            <div className={`text-sm font-bold ${selectedAsset?.name?.includes('Rajnagar') ? 'text-amber-900' : 'text-red-900'} flex items-center justify-between`}>
+              <span>{selectedAsset?.name?.includes('Rajnagar') ? 'Degraded Access (2.5x Delay)' : 'Total Road Isolation'}</span>
+              <span className={`px-2 py-0.5 rounded ${selectedAsset?.name?.includes('Rajnagar') ? 'bg-amber-600' : 'bg-red-600'} text-white text-[10px]`}>
+                {selectedAsset?.name?.includes('Rajnagar') ? 'DEGRADED' : 'IMPASSABLE'}
+              </span>
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-2 text-xs">
             <div className="bg-slate-50 border border-slate-200 p-2.5 rounded">
               <div className="text-[10px] text-slate-400 uppercase font-mono font-bold">ACCESS DELTA</div>
-              <div className="text-base font-bold text-red-600 font-mono-num">+37 min</div>
+              <div className="text-base font-bold text-red-600 font-mono-num">
+                {selectedAsset?.name?.includes('Rajnagar') ? '+28 min' : 'IMPASSABLE'}
+              </div>
             </div>
 
             <div className="bg-slate-50 border border-slate-200 p-2.5 rounded">
               <div className="text-[10px] text-slate-400 uppercase font-mono font-bold">FLOOD PROBABILITY</div>
-              <div className="text-base font-bold text-slate-900 font-mono-num">0.78</div>
+              <div className="text-base font-bold text-slate-900 font-mono-num">
+                {selectedAsset?.name?.includes('Rajnagar') ? '0.44' : '0.64'}
+              </div>
             </div>
 
             <div className="bg-slate-50 border border-slate-200 p-2.5 rounded">
               <div className="text-[10px] text-slate-400 uppercase font-mono font-bold">ROAD CONNECTION</div>
-              <div className="text-xs font-bold text-slate-800">SH-60 / SH-9A</div>
+              <div className="text-xs font-bold text-slate-800">OSM Arterial Link</div>
             </div>
 
             <div className="bg-slate-50 border border-slate-200 p-2.5 rounded">
-              <div className="text-[10px] text-slate-400 uppercase font-mono font-bold">POPULATION IMPACT</div>
-              <div className="text-base font-bold text-slate-900 font-mono-num">184,000</div>
+              <div className="text-[10px] text-slate-400 uppercase font-mono font-bold">ISOLATED FACILITIES</div>
+              <div className="text-base font-bold text-slate-900 font-mono-num">{simResult?.cascade?.isolated_facilities_count ?? 94}</div>
             </div>
           </div>
 
-          {/* WHY SECTION (Prompt requirement #14) */}
+          {/* WHY SECTION */}
           <div className="bg-amber-50 border border-amber-200 rounded-md p-3 space-y-1.5">
             <div className="text-[10px] font-bold text-amber-800 uppercase font-mono flex items-center gap-1">
               <HelpCircle className="w-3 h-3 text-amber-600" />
-              <span>WHY HAS ACCESS DEGRADED?</span>
+              <span>ACCESSIBILITY ACCORDING TO 3-STATE MODEL</span>
             </div>
             <p className="text-xs text-amber-950 leading-relaxed font-medium">
-              Causeway overtopping at Maitapur levee + direct road link failure on SH-9A cuts primary ambulance route from Chandbali Staging Depot.
+              {selectedAsset?.name?.includes('Rajnagar')
+                ? 'CHC Rajnagar feeder link is in DEGRADED status (0.30 <= P < 0.60), causing 2.5x travel time delay without total isolation.'
+                : 'PHC Sanatpur access link is in IMPASSABLE status (P >= 0.60) due to 3.78m peak storm surge inundation across low-elevation plain.'}
             </p>
           </div>
 
@@ -96,7 +108,7 @@ export default function ContextInspectorPanel({
             }}
             className="w-full py-2 bg-blue-900 hover:bg-blue-950 text-white font-bold text-xs rounded-md shadow-xs transition-all flex items-center justify-center gap-2"
           >
-            <span>Draft Action Advisory for Rajnagar</span>
+            <span>Draft Action Advisory for Asset</span>
             <ArrowRight className="w-3.5 h-3.5" />
           </button>
         </div>
@@ -112,25 +124,25 @@ export default function ContextInspectorPanel({
           </div>
 
           <div>
-            <h3 className="text-base font-bold text-slate-900">SH-9A (MAITAPUR CAUSEWAY)</h3>
-            <p className="text-xs text-slate-500">State Highway Link · Rajnagar-Chandbali Corridor</p>
+            <h3 className="text-base font-bold text-slate-900">{selectedAsset?.name || 'NH16 / COASTAL ROAD CORRIDOR'}</h3>
+            <p className="text-xs text-slate-500">Primary Highway Link · Kendrapara-Bhadrak Corridor</p>
           </div>
 
           <div className="bg-red-50 border border-red-200 rounded-md p-3 space-y-1">
             <div className="text-[10px] font-bold text-red-700 uppercase font-mono">CURRENT STATUS</div>
-            <div className="text-sm font-bold text-red-900">CUT / OVERTOPPED (0.9m flood depth)</div>
+            <div className="text-sm font-bold text-red-900">IMPASSABLE (Storm surge inundation P = 0.95)</div>
             <div className="text-xs text-slate-600">Water levels exceed safe vehicle clearance.</div>
           </div>
 
           <div className="bg-slate-50 border border-slate-200 p-3 rounded-md space-y-2 text-xs">
             <div className="font-bold text-slate-800">AFFECTED DEPENDENCIES</div>
-            <div className="text-slate-600">• Rajnagar Community Health Centre (Ambulances blocked)</div>
-            <div className="text-slate-600">• 41,000 residents in Maitapur Panchayati Raj</div>
+            <div className="text-slate-600">• PHC Sanatpur & UGPHC Tangi (Ambulances blocked)</div>
+            <div className="text-slate-600">• 94 health facilities isolated across coastal strip</div>
           </div>
 
           <div className="bg-blue-50 border border-blue-200 p-3 rounded-md text-xs space-y-1">
             <div className="font-bold text-blue-950">RECOMMENDED DETOUR</div>
-            <div className="text-blue-900">Reroute via Western Bypass (SH-60). Adds +24 min travel time but remains 100% dry.</div>
+            <div className="text-blue-900">Reroute via Western Bypass. Adds +24 min travel time but remains 100% dry.</div>
           </div>
         </div>
       ) : isScenarioState ? (

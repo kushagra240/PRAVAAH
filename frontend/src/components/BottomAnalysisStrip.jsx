@@ -62,13 +62,13 @@ export default function BottomAnalysisStrip({
       <div className="flex-1 overflow-x-auto no-scrollbar">
         {activeTab === 'hazard' && (
           <div className="flex items-center justify-around font-mono-num text-xs text-slate-700 font-medium">
-            <div>Wind: <span className="font-bold text-slate-900">{simResult?.max_wind_kph || vMax} km/h</span></div>
+            <div>Wind: <span className="font-bold text-slate-900">{simResult?.max_wind_kph || 144.1} km/h</span></div>
             <span className="text-slate-300">|</span>
-            <div>Surge Height: <span className="font-bold text-blue-700">{simResult?.peak_surge_m || 2.1} m</span></div>
+            <div>Surge Height: <span className="font-bold text-blue-700">{simResult?.peak_surge_m || 3.78} m</span></div>
             <span className="text-slate-300">|</span>
-            <div>Max Flood Risk Index: <span className="font-bold text-red-600">{simResult?.flood_probabilities ? Math.max(...simResult.flood_probabilities).toFixed(2) : '0.78'}</span></div>
+            <div>Max Flood Risk Index: <span className="font-bold text-red-600">{simResult?.flood_probabilities ? Math.max(...simResult.flood_probabilities).toFixed(2) : '0.95'}</span></div>
             <span className="text-slate-300">|</span>
-            <div>Cut Roads: <span className="font-bold text-amber-700">{simResult?.cascade?.broken_road_edges_count ?? 12} segments</span></div>
+            <div>Cut Roads: <span className="font-bold text-amber-700">{simResult?.cascade?.broken_road_edges_count ?? 1448} segments</span></div>
           </div>
         )}
 
@@ -80,19 +80,19 @@ export default function BottomAnalysisStrip({
             </span>
             <ChevronRight className="w-3.5 h-3.5 text-slate-400 shrink-0" />
             <span className="px-2 py-0.5 rounded bg-blue-100 text-blue-900 border border-blue-200">
-              FLOOD SURGE ({simResult?.peak_surge_m || 2.1}m)
+              FLOOD SURGE ({simResult?.peak_surge_m || 3.78}m)
             </span>
             <ChevronRight className="w-3.5 h-3.5 text-slate-400 shrink-0" />
             <span className="px-2 py-0.5 rounded bg-red-100 text-red-900 border border-red-200">
-              {simResult?.cascade?.broken_road_edges?.[0]?.name || 'SH-9A LEVEE BREACH'}
+              {simResult?.cascade?.broken_road_edges?.[0]?.name || 'NH16 / COASTAL ROAD CORRIDOR'}
             </span>
             <ChevronRight className="w-3.5 h-3.5 text-slate-400 shrink-0" />
             <span className="px-2 py-0.5 rounded bg-[#0F2942] text-white">
-              {simResult?.cascade?.isolated_facility_names?.[0] || 'RAJNAGAR CHC'} ISOLATED
+              {simResult?.cascade?.isolated_facility_names?.[0] || 'PHC SANATPUR & UGPHC TANGI'} IMPASSABLE
             </span>
             <ChevronRight className="w-3.5 h-3.5 text-slate-400 shrink-0" />
             <span className="px-2 py-0.5 rounded bg-cyan-100 text-cyan-900 border border-cyan-300 font-bold">
-              {(simResult?.cascade?.population_losing_30min_access ?? isolatedPop).toLocaleString()} POPULATION ISOLATED
+              {simResult?.cascade?.isolated_facilities_count ?? 94} FACILITIES ISOLATED
             </span>
           </div>
         )}
@@ -119,8 +119,8 @@ export default function BottomAnalysisStrip({
             </div>
 
             <div className="flex items-center gap-1 border-l border-slate-200 pl-4 font-mono-num font-bold text-red-600">
-              <span>+{(simResult?.cascade?.population_losing_30min_access ?? 184000).toLocaleString()}</span>
-              <span className="text-slate-500 font-sans font-normal text-[11px]">people beyond 30-min care window</span>
+              <span>{simResult?.cascade?.isolated_facilities_count ?? 94} health facilities</span>
+              <span className="text-slate-500 font-sans font-normal text-[11px]">road-isolated; CHC Rajnagar in 2.5x delay state</span>
             </div>
           </div>
         )}

@@ -1,0 +1,25 @@
+{
+  "region_id": "odisha_coastal",
+  "name": "Coastal Odisha (Puri, Jagatsinghpur, Kendrapara, Bhadrak)",
+  "state": "Odisha",
+  "bounding_box": {
+    "min_lat": 19.7,
+    "max_lat": 21.0,
+    "min_lon": 85.7,
+    "max_lon": 87.0
+  },
+  "districts": [
+    "Puri",
+    "Jagatsinghpur",
+    "Kendrapara",
+    "Bhadrak"
+  ],
+  "h3_resolution": 8,
+  "crs": "EPSG:4326",
+  "calibration_cyclones": [
+    "Phailin (2013)",
+    "Fani (2019)",
+    "Amphan (2020)",
+    "Yaas (2021)"
+  ]
+}

@@ -4,8 +4,8 @@ import { Layers, Activity, AlertTriangle, Eye, Sliders, GitMerge, FileText, Chec
 export default function StatePresetsBar({ currentState, onSelectState }) {
   const states = [
     { id: 1, label: '1. Command Center', icon: Activity, tooltip: 'Default Command Center Overview' },
-    { id: 2, label: '2. Hospital Selected', icon: MapPin, tooltip: 'Rajnagar CHC Asset Inspector & Cause Analysis' },
-    { id: 3, label: '3. Road Cut', icon: AlertTriangle, tooltip: 'SH-9A Maitapur Levee Breach Disruption' },
+    { id: 2, label: '2. Hospital Selected', icon: MapPin, tooltip: 'PHC Sanatpur (IMPASSABLE) & CHC Rajnagar (DEGRADED)' },
+    { id: 3, label: '3. Road Cut', icon: AlertTriangle, tooltip: 'NH16 Coastal Road Disruption' },
     { id: 4, label: '4. Flood Layer', icon: Layers, tooltip: 'Active H3 & Inundation Depth Risk Overlay' },
     { id: 5, label: '5. Landfall (T-0)', icon: Eye, tooltip: 'Timeline at Peak Landfall Impact' },
     { id: 6, label: '6. Scenario Sim', icon: Sliders, tooltip: 'Interactive Wind/Rain/Surge Scenario Simulator' },

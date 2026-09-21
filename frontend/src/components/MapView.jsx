@@ -225,12 +225,13 @@ export default function MapView({
 
         {/* Health Facilities */}
         {layers.hospitals && facilities.map(fac => {
-          const isRajnagar = fac.name?.includes('Rajnagar');
+          const isImpassable = fac.name?.includes('Sanatpur') || fac.name?.includes('Tangi');
+          const isDegraded = fac.name?.includes('Rajnagar');
           return (
             <Marker 
               key={fac.asset_id} 
               position={[fac.lat, fac.lon]} 
-              icon={isRajnagar ? hospitalIsolatedIcon : hospitalIcon}
+              icon={isImpassable ? hospitalIsolatedIcon : hospitalIcon}
               eventHandlers={{
                 click: () => onSelectAsset && onSelectAsset({ ...fac, asset_type: 'hospital' })
               }}
@@ -238,9 +239,9 @@ export default function MapView({
               <Popup>
                 <div className="text-xs space-y-1 cursor-pointer font-sans p-1">
                   <div className="font-bold text-slate-900 text-sm">{fac.name}</div>
-                  <div>Type: {fac.type} | Beds: {fac.bed_capacity}</div>
-                  <div className={isRajnagar ? 'text-red-600 font-bold' : 'text-emerald-600'}>
-                    Access Status: {isRajnagar ? 'Degraded access (+37 min)' : 'Operational'}
+                  <div>Type: {fac.type} | Beds: {fac.bed_capacity} | Block: {fac.block}</div>
+                  <div className={isImpassable ? 'text-red-600 font-bold' : isDegraded ? 'text-amber-600 font-bold' : 'text-emerald-600'}>
+                    Access Status: {isImpassable ? 'IMPASSABLE (Total Road Isolation)' : isDegraded ? 'DEGRADED ACCESS (2.5x Travel Delay)' : 'Operational'}
                   </div>
                   <div className="text-blue-600 font-semibold pt-1">Click to inspect asset details &rarr;</div>
                 </div>
@@ -270,26 +271,26 @@ export default function MapView({
         ))}
       </MapContainer>
 
-      {/* Floating Levee Breach Map Callout Popup (Exact match to Reference Image) */}
+      {/* Floating Road Inundation Callout Popup */}
       <div 
-        onClick={() => onSelectRoadBreach && onSelectRoadBreach({ name: 'SH-9A Maitapur Causeway' })}
-        className="absolute bottom-6 left-6 z-[1000] bg-white border border-red-300 border-l-4 border-l-red-600 rounded-lg p-3 shadow-lg max-width-[360px] max-w-sm cursor-pointer hover:shadow-xl transition-all"
+        onClick={() => onSelectRoadBreach && onSelectRoadBreach({ name: 'NH16 / Coastal Road Inundation' })}
+        className="absolute bottom-6 left-6 z-[1000] bg-white border border-red-300 border-l-4 border-l-red-600 rounded-lg p-3 shadow-lg max-w-sm cursor-pointer hover:shadow-xl transition-all"
       >
         <div className="flex items-center gap-1.5 text-xs font-bold text-red-600 mb-1">
           <AlertTriangle className="w-4 h-4 text-red-600 shrink-0" />
-          <span>Main road to hospital flooded</span>
+          <span>Coastal Access Corridors Impassable</span>
         </div>
         <p className="text-xs text-slate-700 leading-snug">
-          Water from the <strong>Maitapur levee breach</strong> has covered SH-9A, cutting off direct ambulance access to <strong>Rajnagar Community Health Centre</strong>.
+          Storm surge inundation has severed arterial links, placing <strong>PHC Sanatpur</strong> and <strong>UGPHC Tangi</strong> under <strong>Total Road Isolation</strong>, while <strong>CHC Rajnagar</strong> faces 2.5x travel time delay.
         </p>
         <div className="text-[10px] text-slate-400 mt-2 font-mono flex items-center justify-between border-t border-slate-100 pt-1">
-          <span>COORDINATES: 20.58° N, 86.72° E</span>
+          <span>COORDINATES: 20.50° N, 86.46° E</span>
           <span className="text-blue-600 font-bold hover:underline">Inspect Breach &rarr;</span>
         </div>
       </div>
 
-      {/* Map Legend (Reference Image Style) */}
-      <div className="absolute bottom-6 right-6 z-[1000] bg-white/95 backdrop-blur-sm border border-slate-200 rounded-lg p-3 shadow-md text-xs space-y-2 w-52">
+      {/* Map Legend */}
+      <div className="absolute bottom-6 right-6 z-[1000] bg-white/95 backdrop-blur-sm border border-slate-200 rounded-lg p-3 shadow-md text-xs space-y-2 w-56">
         <div className="font-bold text-slate-800 border-b border-slate-200 pb-1 flex items-center justify-between">
           <span>Map Legend</span>
           <span className="text-[10px] text-blue-600 font-mono">2D GIS</span>
@@ -297,19 +298,19 @@ export default function MapView({
         <div className="space-y-1.5 text-slate-600">
           <div className="flex items-center gap-2">
             <span className="w-3 h-3 rounded-full bg-blue-600 inline-block"></span>
-            <span>High Flood Prob (P ≥ 0.60)</span>
+            <span>Impassable Flood Risk (P ≥ 0.60)</span>
           </div>
           <div className="flex items-center gap-2">
             <span className="w-3 h-3 rounded-full bg-sky-400 inline-block"></span>
-            <span>Moderate Flood Extent</span>
+            <span>Degraded Flood Risk (0.30 ≤ P &lt; 0.60)</span>
           </div>
           <div className="flex items-center gap-2">
             <span className="w-4 h-0.5 bg-red-600 border-b-2 border-dashed border-red-600 inline-block"></span>
-            <span>Cut / Flooded Road (SH-9A)</span>
+            <span>Cut Road Corridor</span>
           </div>
           <div className="flex items-center gap-2">
             <span className="w-4 h-4 rounded-full bg-red-600 text-white flex items-center justify-center font-bold text-[10px]">H</span>
-            <span>Health Facility (Rajnagar CHC)</span>
+            <span>Isolated Facility (PHC Sanatpur)</span>
           </div>
           <div className="flex items-center gap-2">
             <span className="w-4 h-4 rounded bg-emerald-600 text-white flex items-center justify-center font-bold text-[10px]">S</span>

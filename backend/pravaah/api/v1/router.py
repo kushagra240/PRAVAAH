@@ -112,11 +112,11 @@ def get_run_impact_summary(
         track["v_max"] = 215.0
         track["p_c"] = 932.0
     
-    if lat is not None:
+    if isinstance(lat, (int, float)):
         track["lat"] = lat
-    if lon is not None:
+    if isinstance(lon, (int, float)):
         track["lon"] = lon
-    if v_max is not None:
+    if isinstance(v_max, (int, float)):
         track["v_max"] = v_max
         
     sim_res = simulator.run_simulation(track, {})

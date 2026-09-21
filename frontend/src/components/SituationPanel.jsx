@@ -7,10 +7,10 @@ export default function SituationPanel({ briefData, simResult, onSelectEvidence 
   const brief = briefData?.brief || {};
   const evidenceBundle = briefData?.evidence_bundle?.evidence_items || {};
 
-  const pop30min = cascade.population_losing_30min_access || 184000;
-  const isoFacs = cascade.isolated_facilities_count || 4;
-  const peakSurge = simResult?.peak_surge_m || 3.2;
-  const brokenRoads = cascade.broken_road_edges_count || 12;
+  const pop30min = cascade.population_losing_30min_access || exposure.pop_exposed_high_flood || 338683;
+  const isoFacs = cascade.isolated_facilities_count || 94;
+  const peakSurge = simResult?.peak_surge_m || 3.78;
+  const brokenRoads = cascade.impassable_edges_count || cascade.broken_road_edges_count || 1448;
 
   // Render narrative text with highlighted evidence citation badges
   const renderCitedText = (text) => {

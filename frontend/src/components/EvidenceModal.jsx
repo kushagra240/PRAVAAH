@@ -6,8 +6,8 @@ export default function EvidenceModal({ evidenceId, evidenceBundle, onClose }) {
 
   const evItem = evidenceBundle?.evidence_items?.[evidenceId] || {
     id: evidenceId || "EV-ISOLATED-POP-01",
-    metric: "Population Moved Beyond 30-Min Access",
-    value: 184000,
+    metric: "Population in Severe Hazard & Access-Deprived Zone",
+    value: 338683,
     unit: "people",
     method: "SciPy CSR Dijkstra Isochrone Intersect",
     source: "IMD Cyclone Hydro-Model + WorldPop 2023 Grid + OSM Highways",

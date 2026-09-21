@@ -63,10 +63,18 @@ class EvidenceBuilder:
         
         evidence_items["EVID_POP_FLOOD_EXPOSED"] = {
             "id": "EVID_POP_FLOOD_EXPOSED",
-            "metric": "Total Population exposed to High Flood Probability (P >= 0.5)",
-            "value": exposure.get("pop_exposed_high_flood", 0),
+            "metric": "Population in Elevated Flood Risk Zone (P >= 0.30)",
+            "value": exposure.get("pop_exposed_elevated_flood", exposure.get("pop_exposed_high_flood", 0)),
             "unit": "people",
-            "provenance": "MODELLED"
+            "provenance": "OBSERVED_DERIVED"
+        }
+
+        evidence_items["EVID_POP_SEVERE_FLOOD"] = {
+            "id": "EVID_POP_SEVERE_FLOOD",
+            "metric": "Population in Severe Flood Isolation Zone (P >= 0.60)",
+            "value": exposure.get("pop_exposed_severe_flood", 0),
+            "unit": "people",
+            "provenance": "OBSERVED_DERIVED"
         }
 
         # Block specific evidence items

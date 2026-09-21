@@ -9,7 +9,7 @@ export default function BottomAnalysisStrip({
   const [activeTab, setActiveTab] = useState('hazard');
 
   const vMax = simResult?.max_wind_kph || simResult?.cascade?.v_max || 144.1;
-  const isolatedPop = simResult?.exposure?.pop_exposed_high_flood || simResult?.cascade?.isolated_population || 338683;
+  const isolatedPop = simResult?.exposure?.pop_exposed_elevated_flood || simResult?.exposure?.pop_exposed_high_flood || 103230;
 
   return (
     <div className="bg-white border-t border-slate-200 px-4 py-2 flex items-center justify-between gap-4 shrink-0 text-xs select-none shadow-xs">

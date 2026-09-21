@@ -7,7 +7,7 @@ export default function SituationPanel({ briefData, simResult, onSelectEvidence 
   const brief = briefData?.brief || {};
   const evidenceBundle = briefData?.evidence_bundle?.evidence_items || {};
 
-  const pop30min = cascade.population_losing_30min_access || exposure.pop_exposed_high_flood || 338683;
+  const popElevated = exposure.pop_exposed_elevated_flood || exposure.pop_exposed_high_flood || 103230;
   const isoFacs = cascade.isolated_facilities_count || 94;
   const peakSurge = simResult?.peak_surge_m || 3.78;
   const brokenRoads = cascade.impassable_edges_count || cascade.broken_road_edges_count || 1448;
@@ -47,16 +47,16 @@ export default function SituationPanel({ briefData, simResult, onSelectEvidence 
         </div>
 
         <div className="grid grid-cols-2 gap-3">
-          {/* Card 1: Pop Access Loss */}
+          {/* Card 1: Elevated Flood Pop */}
           <div className="glass-panel p-3.5 flex flex-col justify-between border-l-4 border-l-red-500">
             <div className="flex items-center justify-between text-gray-400 text-xs">
-              <span>Pop Access Loss (&lt;30m)</span>
+              <span>Elevated Flood Risk (P&ge;0.30)</span>
               <Users className="w-4 h-4 text-red-400" />
             </div>
             <div className="text-2xl font-black text-white font-mono my-1">
-              {pop30min.toLocaleString()}
+              {popElevated.toLocaleString()}
             </div>
-            <div className="text-[10px] text-gray-400">people isolated from care</div>
+            <div className="text-[10px] text-gray-400">people in elevated flood risk zone</div>
           </div>
 
           {/* Card 2: Isolated Hospitals */}

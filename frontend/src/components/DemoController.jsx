@@ -20,7 +20,7 @@ const DEMO_STEPS = [
   {
     step: 4,
     title: "4. Accessibility Impact",
-    desc: "338,683 population flood exposure & 94 isolated public health facilities."
+    desc: "103,230 population elevated flood exposure & 94 isolated public health facilities."
   },
   {
     step: 5,

@@ -124,12 +124,18 @@ def get_run_impact_summary(
     broken_edges = cascade.get("broken_road_edges", [])
     broken_km = round(sum(e.get("length_km", 0.0) for e in broken_edges), 1)
     
+    exposure = sim_res.get("exposure", {})
+    
     return {
         "run_id": run_id,
         "track_name": track.get("name", "Cyclone Forecast"),
         "track_fix": track,
         "isolated_facilities_count": cascade.get("isolated_facilities_count", 0),
         "total_facilities": len(simulator.facilities),
+        "total_population": exposure.get("total_population", 0),
+        "pop_exposed_vsevere_wind": exposure.get("pop_exposed_vsevere_wind", 0),
+        "pop_exposed_severe_flood": exposure.get("pop_exposed_severe_flood", 0),
+        "pop_exposed_elevated_flood": exposure.get("pop_exposed_elevated_flood", 0),
         "population_losing_30min_access": cascade.get("population_losing_30min_access", 0),
         "population_losing_60min_access": cascade.get("population_losing_60min_access", 0),
         "open_edges_count": cascade.get("open_edges_count", 0),
@@ -146,6 +152,7 @@ def get_run_impact_summary(
             "flood_model": "ASSUMPTION",
             "road_network": "OBSERVED",
             "health_facilities": "OBSERVED",
+            "population_data": "OBSERVED",
             "spatial_grid": "FIXTURE"
         }
     }

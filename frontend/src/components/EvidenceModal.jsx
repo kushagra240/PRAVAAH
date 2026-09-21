@@ -5,13 +5,13 @@ export default function EvidenceModal({ evidenceId, evidenceBundle, onClose }) {
   if (!evidenceId && !evidenceBundle) return null;
 
   const evItem = evidenceBundle?.evidence_items?.[evidenceId] || {
-    id: evidenceId || "EV-ISOLATED-POP-01",
-    metric: "Population in Severe Hazard & Access-Deprived Zone",
-    value: 338683,
+    id: evidenceId || "EVID_POP_FLOOD_EXPOSED",
+    metric: "Population in Elevated Flood Risk Zone (P >= 0.30)",
+    value: 103230,
     unit: "people",
-    method: "SciPy CSR Dijkstra Isochrone Intersect",
-    source: "IMD Cyclone Hydro-Model + WorldPop 2023 Grid + OSM Highways",
-    provenance: "T1_AUTHORITATIVE_DERIVED"
+    method: "WorldPop 2020 1km Grid Intersect + Heuristic Flood Screening",
+    source: "IMD Hydro-Model + WorldPop 2020 1km Grid + OSM Highways",
+    provenance: "OBSERVED"
   };
 
   return (

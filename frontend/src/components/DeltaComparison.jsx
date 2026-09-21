@@ -13,8 +13,8 @@ export default function DeltaComparison({ baselineResult, scenarioResult }) {
   const baseCascade = baselineResult?.cascade || {};
   const scnCascade = scenarioResult?.cascade || {};
 
-  const basePop = baselineResult?.exposure?.pop_exposed_high_flood || baseCascade.population_losing_30min_access || 338683;
-  const scnPop = scenarioResult?.exposure?.pop_exposed_high_flood || scnCascade.population_losing_30min_access || 338683;
+  const basePop = baselineResult?.exposure?.pop_exposed_elevated_flood || baselineResult?.exposure?.pop_exposed_high_flood || 103230;
+  const scnPop = scenarioResult?.exposure?.pop_exposed_elevated_flood || scenarioResult?.exposure?.pop_exposed_high_flood || 103230;
   const popDelta = scnPop - basePop;
 
   const baseFac = baseCascade.isolated_facilities_count || 94;

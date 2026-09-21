@@ -4,11 +4,10 @@ import { Activity, CloudRain, Route, Building2, Users, ArrowRight } from 'lucide
 export default function CascadeGraph({ simResult, onSelectEvidence }) {
   const cascade = simResult?.cascade || {};
   const brokenRoads = cascade.broken_road_edges || [];
-  const isoNames = cascade.isolated_facility_names || ["Rajnagar CHC", "Mahakalapada CHC"];
+  const isoNames = cascade.isolated_facility_names || ["PHC, Sanatpur", "UGPHC, Tangi"];
 
-  const pop30m = cascade.population_losing_30min_access || 184000;
-  const brokenCount = cascade.broken_road_edges_count || 12;
-  const isoCount = cascade.isolated_facilities_count || 4;
+  const brokenCount = cascade.broken_road_edges_count || 1448;
+  const isoCount = cascade.isolated_facilities_count || 94;
 
   const nodes = [
     {
@@ -22,7 +21,7 @@ export default function CascadeGraph({ simResult, onSelectEvidence }) {
     {
       id: "hazard",
       title: "Peak Rain & Surge",
-      sub: `${simResult?.peak_surge_m || 3.2}m Surge / 250mm Rain`,
+      sub: `${simResult?.peak_surge_m || 3.78}m Surge / 250mm Rain`,
       icon: CloudRain,
       color: "border-cyan-500 text-cyan-400 bg-cyan-950/40",
       evidId: "EVID_PEAK_SURGE"
@@ -30,7 +29,7 @@ export default function CascadeGraph({ simResult, onSelectEvidence }) {
     {
       id: "road",
       title: "Arterial Cutoff",
-      sub: `${brokenCount} Links Overtopped (${brokenRoads[0]?.name || 'SH-60 Causeway'})`,
+      sub: `${brokenCount} Links Impassable (${brokenRoads[0]?.name || 'NH16 Corridor'})`,
       icon: Route,
       color: "border-purple-500 text-purple-400 bg-purple-950/40",
       evidId: "EVID_BROKEN_ROAD_COUNT"
@@ -38,18 +37,18 @@ export default function CascadeGraph({ simResult, onSelectEvidence }) {
     {
       id: "facility",
       title: "Facility Isolation",
-      sub: `${isoCount} Hospitals Isolated (${isoNames[0] || 'Rajnagar CHC'})`,
+      sub: `${isoCount} Hospitals Isolated (${isoNames[0] || 'PHC, Sanatpur'})`,
       icon: Building2,
       color: "border-orange-500 text-orange-400 bg-orange-950/40",
       evidId: "EVID_ISOLATED_FAC_COUNT"
     },
     {
       id: "impact",
-      title: "Pop Access Loss",
-      sub: `${pop30m.toLocaleString()} People Beyond 30m Care`,
+      title: "3-State Access Degradation",
+      sub: `${isoCount} Facilities Isolated | CHC Rajnagar Degraded`,
       icon: Users,
       color: "border-red-600 text-white bg-red-900/60 font-bold",
-      evidId: "EVID_POP_30MIN_LOSS"
+      evidId: "EVID_ISOLATED_FAC_COUNT"
     }
   ];
 

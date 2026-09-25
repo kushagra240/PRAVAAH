@@ -20,10 +20,9 @@ def run_e2e_test(target_url="http://127.0.0.1:8888"):
 
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=True)
-        # Cold cache context with desktop viewport and tunnel bypass header
+        # Cold cache context with desktop viewport
         context = browser.new_context(
-            viewport={"width": 1400, "height": 900},
-            extra_http_headers={"Bypass-Tunnel-Reminder": "true"}
+            viewport={"width": 1400, "height": 900}
         )
         page = context.new_page()
 

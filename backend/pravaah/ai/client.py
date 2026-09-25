@@ -50,6 +50,7 @@ class GeminiDecisionEngine:
                 )
                 parsed["situation_narrative"] = cleaned_brief
                 parsed["citation_validated"] = is_valid
+                parsed["provenance"] = "LIVE_GEMINI"
                 return parsed
             except Exception as e:
                 logger.warning(f"Gemini API invocation failed/fallback triggered: {e}")

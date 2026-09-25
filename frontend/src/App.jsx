@@ -25,6 +25,7 @@ export default function App() {
   const [selectedTrack, setSelectedTrack] = useState(null);
   const [regionData, setRegionData] = useState(null);
   const [gridCells, setGridCells] = useState([]);
+  const [roadNetwork, setRoadNetwork] = useState(null);
   const [simResult, setSimResult] = useState(null);
   const [impactSummary, setImpactSummary] = useState(null);
   const [briefData, setBriefData] = useState(null);
@@ -69,6 +70,12 @@ export default function App() {
       const gridRes = await fetch('/api/v1/region/grid');
       const gridData = await gridRes.json();
       setGridCells(gridData);
+
+      // Lazily fetch road network in background
+      fetch('/api/v1/region/roads?simplified=true')
+        .then(res => res.json())
+        .then(data => setRoadNetwork(data))
+        .catch(err => console.error("Roads fetch error:", err));
 
       runSimulation(tracksData[0], {});
     } catch (e) {
@@ -218,7 +225,7 @@ export default function App() {
             simResult={simResult}
             facilities={regionData?.health_facilities || []}
             shelters={regionData?.cyclone_shelters || []}
-            roadNetwork={regionData?.road_network || null}
+            roadNetwork={roadNetwork || regionData?.road_network || null}
             trackFix={selectedTrack}
             layers={layers}
             onSelectAsset={(asset) => {

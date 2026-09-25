@@ -21,6 +21,15 @@ app.add_middleware(
 # Include API v1 router
 app.include_router(api_v1_router, prefix=settings.API_V1_STR)
 
+@app.on_event("startup")
+def prewarm_cache():
+    """Pre-warms baseline scenario impact summary and Dijkstra spatial indices on startup."""
+    try:
+        from backend.pravaah.api.v1.router import get_run_impact_summary
+        get_run_impact_summary("yaas")
+    except Exception as e:
+        print(f"Prewarm warning: {e}")
+
 @app.get("/")
 def root():
     return {
@@ -32,3 +41,4 @@ def root():
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run("backend.pravaah.main:app", host="0.0.0.0", port=8000, reload=True)
+

@@ -1,5 +1,7 @@
+import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from backend.pravaah.config import settings
 from backend.pravaah.api.v1.router import router as api_v1_router
 
@@ -29,6 +31,11 @@ def prewarm_cache():
         get_run_impact_summary("yaas")
     except Exception as e:
         print(f"Prewarm warning: {e}")
+
+# Mount built React frontend static distribution if dist exists
+dist_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "frontend", "dist"))
+if os.path.exists(dist_dir):
+    app.mount("/", StaticFiles(directory=dist_dir, html=True), name="static")
 
 @app.get("/")
 def root():

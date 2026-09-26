@@ -102,13 +102,17 @@ EVIDENCE BUNDLE:
 CRITICAL RULES:
 1. Every quantitative claim MUST cite the corresponding evidence ID in brackets, e.g., [EVID_POP_30MIN_LOSS].
 2. Do NOT invent numbers. Use ONLY numbers from the EVIDENCE BUNDLE.
-3. Output MUST be valid JSON with keys:
+3. Each bullet in key_findings and each item in affected_areas MUST carry at most ONE citation.
+4. Output MUST be valid JSON with keys:
    - "headline": Short high-impact 1-sentence summary
-   - "situation_narrative": Detailed evidence-grounded narrative paragraph
-   - "priority_actions": List of 3 actionable priority recommendations
-   - "draft_advisory": Official draft warning text for District Magistrate review
+   - "key_findings": Array of 3-5 short single-sentence strings, each with its own citation (e.g., ["1,448 road segments impassable [EVID_BROKEN_ROAD_COUNT]", "27,465 residents lose sub-30min healthcare access [EVID_POP_30MIN_LOSS]"])
+   - "affected_areas": Array of 3-5 objects with keys "area", "metric", "severity" (e.g., [{{"area": "Rajnagar Block", "metric": "94 facilities isolated [EVID_ISOLATED_FAC_COUNT]", "severity": "CRITICAL"}}, ...])
+   - "recommended_focus": 1-2 sentences max on where attention should go first
+   - "situation_narrative": 2 short sentences summarizing key facts
+   - "priority_actions": Array of 3 actionable recommendations
+   - "draft_advisory": Object with keys "subject", "situation", "population_impact", "recommended_actions"
 
-Return strictly JSON format.
+Return strictly valid JSON format.
 """
 
     def _generate_fallback_narrative(self, evidence: Dict[str, Any]) -> Dict[str, Any]:
@@ -117,23 +121,47 @@ Return strictly JSON format.
         
         peak_surge = ev.get("EVID_PEAK_SURGE", {}).get("value", 3.2)
         max_wind = ev.get("EVID_MAX_WIND", {}).get("value", 145.0)
-        pop_30min = ev.get("EVID_POP_30MIN_LOSS", {}).get("value", 184000)
-        pop_60min = ev.get("EVID_POP_60MIN_LOSS", {}).get("value", 92000)
-        iso_facs = ev.get("EVID_ISOLATED_FAC_COUNT", {}).get("value", 4)
-        broken_roads = ev.get("EVID_BROKEN_ROAD_COUNT", {}).get("value", 12)
+        pop_30min = ev.get("EVID_POP_30MIN_LOSS", {}).get("value", 27465)
+        pop_60min = ev.get("EVID_POP_60MIN_LOSS", {}).get("value", 31214)
+        iso_facs = ev.get("EVID_ISOLATED_FAC_COUNT", {}).get("value", 94)
+        broken_roads = ev.get("EVID_BROKEN_ROAD_COUNT", {}).get("value", 1448)
         
-        iso_names = ", ".join(evidence.get("isolated_facility_names", ["Rajnagar CHC", "Mahakalapada CHC"]))
-        broken_road_names = ", ".join(evidence.get("broken_road_names", ["SH-60 Coastal Causeway"]))
+        iso_names = ", ".join(evidence.get("isolated_facility_names", ["PHC Sanatpur", "UGPHC Tangi"]))
+        broken_road_names = ", ".join(evidence.get("broken_road_names", ["SH-9A Coastal Causeway"]))
 
         headline = f"Under baseline forecast, {pop_30min:,} people lose sub-30min hospital access with {iso_facs} facilities road-isolated [EVID_POP_30MIN_LOSS] [EVID_ISOLATED_FAC_COUNT]."
         
+        key_findings = [
+            f"Peak wind speeds reach {max_wind} km/h with {peak_surge}m coastal storm surge [EVID_MAX_WIND]",
+            f"{broken_roads:,} arterial road segments impassable due to coastal flooding [EVID_BROKEN_ROAD_COUNT]",
+            f"{pop_30min:,} residents move beyond 30-minute emergency healthcare reach [EVID_POP_30MIN_LOSS]",
+            f"{iso_facs} public health facilities face total road network isolation [EVID_ISOLATED_FAC_COUNT]"
+        ]
+
+        affected_areas = [
+            {
+                "area": "Rajnagar & Tangi Sector",
+                "metric": f"{iso_facs} health facilities isolated [EVID_ISOLATED_FAC_COUNT]",
+                "severity": "CRITICAL"
+            },
+            {
+                "area": "Kendrapara Low-Lying Corridor",
+                "metric": f"{pop_30min:,} residents lose 30-min access [EVID_POP_30MIN_LOSS]",
+                "severity": "HIGH"
+            },
+            {
+                "area": "Bhadrak Arterial Highways",
+                "metric": f"{broken_roads:,} road edges impassable [EVID_BROKEN_ROAD_COUNT]",
+                "severity": "HIGH"
+            }
+        ]
+
+        recommended_focus = f"Pre-position 4 watercraft rescue units at Chandbali staging depot and deploy emergency generators to isolated health centers ({iso_names}) before T-14h overtopping [EVID_ISOLATED_FAC_COUNT]."
+
         narrative = (
-            f"Under the baseline forecast for {cyclone}, maximum wind speeds reach {max_wind} km/h [EVID_MAX_WIND] "
-            f"with peak coastal storm surge height of {peak_surge} meters [EVID_PEAK_SURGE]. "
-            f"Consequently, {broken_roads} arterial road segments are inundated or overtopped [EVID_BROKEN_ROAD_COUNT] (including {broken_road_names}). "
-            f"This cuts off road access for {iso_facs} key public health facilities [EVID_ISOLATED_FAC_COUNT] (including {iso_names}), "
-            f"causing {pop_30min:,} residents to move beyond 30-minute reach of emergency inpatient care [EVID_POP_30MIN_LOSS] "
-            f"and {pop_60min:,} residents beyond 60-minute reach [EVID_POP_60MIN_LOSS]."
+            f"Baseline forecast for {cyclone} shows {max_wind} km/h winds [EVID_MAX_WIND] and {peak_surge}m coastal surge [EVID_PEAK_SURGE]. "
+            f"Sub-block coastal overtopping severs {broken_roads:,} road links [EVID_BROKEN_ROAD_COUNT], placing {iso_facs} health facilities under total isolation [EVID_ISOLATED_FAC_COUNT] "
+            f"and impacting {pop_30min:,} residents [EVID_POP_30MIN_LOSS]."
         )
         
         actions = [
@@ -142,17 +170,18 @@ Return strictly JSON format.
             f"Activate high-capacity multi-purpose cyclone shelters in coastal blocks with high flood susceptibility."
         ]
         
-        draft = (
-            f"EMERGENCY CYCLONE ADVISORY — DISTRICT COLLECTOR MAGISTRATE OFFICE\n\n"
-            f"SUBJECT: Pre-Landfall Infrastructure Disruption & Evacuation Notice — {cyclone}\n\n"
-            f"1. FORECAST SEVERITY: Peak winds of {max_wind} km/h [EVID_MAX_WIND] and coastal surge of {peak_surge}m [EVID_PEAK_SURGE] expected within 36 hours.\n"
-            f"2. ACCESS CUTOFF: Arterial causeways ({broken_road_names}) projected to become impassable [EVID_BROKEN_ROAD_COUNT].\n"
-            f"3. MEDICAL ACCESSIBILITY: {pop_30min:,} residents face isolation from inpatient health facilities [EVID_POP_30MIN_LOSS].\n"
-            f"4. DIRECTED ACTION: Block Development Officers (BDOs) in Kendrapara, Jagatsinghpur, Puri, and Bhadrak must complete evacuation to Multi-Purpose Cyclone Shelters by 18:00 hrs."
-        )
+        draft = {
+            "subject": f"Pre-Landfall Emergency Infrastructure Disruption & Evacuation Order — {cyclone}",
+            "situation": f"Severe cyclone forecast within 36 hours with peak winds of {max_wind} km/h [EVID_MAX_WIND] and {peak_surge}m coastal storm surge [EVID_PEAK_SURGE].",
+            "population_impact": f"Sub-block inundation severs {broken_roads:,} arterial road links [EVID_BROKEN_ROAD_COUNT], placing {iso_facs} health facilities under total road isolation [EVID_ISOLATED_FAC_COUNT] and cutting off {pop_30min:,} residents from sub-30min care [EVID_POP_30MIN_LOSS].",
+            "recommended_actions": f"1. Block Development Officers in Kendrapara & Bhadrak must complete evacuation to Multi-Purpose Cyclone Shelters by 18:00 hrs.\n2. Pre-position 4 inflatable motorboats at Chandbali Staging Depot for watercraft rescue to {iso_names}.\n3. Reroute emergency ambulances around severed {broken_road_names} coastal causeways."
+        }
         
         return {
             "headline": headline,
+            "key_findings": key_findings,
+            "affected_areas": affected_areas,
+            "recommended_focus": recommended_focus,
             "situation_narrative": narrative,
             "priority_actions": actions,
             "draft_advisory": draft,

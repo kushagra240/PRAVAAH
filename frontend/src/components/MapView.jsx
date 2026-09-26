@@ -32,6 +32,17 @@ const cycloneCenterIcon = new L.DivIcon({
   iconAnchor: [17, 17]
 });
 
+// Custom Leaflet Cluster Icon for secondary operational facilities
+const createClusterIcon = (count, blockName) => new L.DivIcon({
+  className: 'custom-icon-cluster',
+  html: `<div style="background: rgba(15, 25, 40, 0.90); color: white; border: 1.5px solid #38BDF8; border-radius: 16px; padding: 2px 8px; font-weight: bold; font-size: 10px; display: flex; align-items: center; gap: 4px; box-shadow: 0 2px 8px rgba(0,0,0,0.3); backdrop-filter: blur(4px); white-space: nowrap;">
+           <span style="background: #0284C7; border-radius: 50%; width: 14px; height: 14px; display: inline-flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 800;">${count}</span>
+           <span>${blockName}</span>
+         </div>`,
+  iconSize: [110, 24],
+  iconAnchor: [55, 12]
+});
+
 export default function MapView({ 
   gridCells = [], 
   simResult = null, 
@@ -45,6 +56,34 @@ export default function MapView({
   onSelectRoadBreach = null
 }) {
   const center = [20.72, 86.85]; // Centered on Kendrapara / Bhadrak / Balasore coast
+
+  // Separate high-priority isolated/degraded facilities from normal operational facilities
+  const keyIsolatedFacilities = facilities.filter(fac => 
+    fac.name?.includes('Sanatpur') || fac.name?.includes('Tangi') || fac.name?.includes('Rajnagar')
+  );
+
+  const operationalFacilities = facilities.filter(fac => 
+    !fac.name?.includes('Sanatpur') && !fac.name?.includes('Tangi') && !fac.name?.includes('Rajnagar')
+  );
+
+  // Group operational facilities into block-level cluster centroids
+  const blockClusters = {};
+  operationalFacilities.forEach(fac => {
+    const block = fac.block || 'District Sector';
+    if (!blockClusters[block]) {
+      blockClusters[block] = { block, count: 0, latSum: 0, lonSum: 0 };
+    }
+    blockClusters[block].count += 1;
+    blockClusters[block].latSum += fac.lat;
+    blockClusters[block].lonSum += fac.lon;
+  });
+
+  const clusterList = Object.values(blockClusters).map(c => ({
+    block: c.block,
+    count: c.count,
+    lat: c.latSum / c.count,
+    lon: c.lonSum / c.count
+  }));
 
   // Calculate cyclone position offset based on timeStepHours
   const baseLat = trackFix?.lat || 20.8;
@@ -240,32 +279,54 @@ export default function MapView({
           </Marker>
         )}
 
-        {/* Health Facilities */}
-        {layers.hospitals && facilities.map(fac => {
-          const isImpassable = fac.name?.includes('Sanatpur') || fac.name?.includes('Tangi');
-          const isDegraded = fac.name?.includes('Rajnagar');
-          return (
-            <Marker 
-              key={fac.asset_id} 
-              position={[fac.lat, fac.lon]} 
-              icon={isImpassable ? hospitalIsolatedIcon : hospitalIcon}
-              eventHandlers={{
-                click: () => onSelectAsset && onSelectAsset({ ...fac, asset_type: 'hospital' })
-              }}
-            >
-              <Popup>
-                <div className="text-xs space-y-1 cursor-pointer font-sans p-1">
-                  <div className="font-bold text-slate-900 text-sm">{fac.name}</div>
-                  <div>Type: {fac.type} | Beds: {fac.bed_capacity} | Block: {fac.block}</div>
-                  <div className={isImpassable ? 'text-red-600 font-bold' : isDegraded ? 'text-amber-600 font-bold' : 'text-emerald-600'}>
-                    Access Status: {isImpassable ? 'IMPASSABLE (Total Road Isolation)' : isDegraded ? 'DEGRADED ACCESS (2.5x Travel Delay)' : 'Operational'}
+        {/* Health Facilities: Priority Isolated Markers + Regional Counter Clusters */}
+        {layers.hospitals && (
+          <>
+            {/* 1. Priority Isolated / Degraded Facilities (Always Visible Prominently) */}
+            {keyIsolatedFacilities.map(fac => {
+              const isImpassable = fac.name?.includes('Sanatpur') || fac.name?.includes('Tangi');
+              const isDegraded = fac.name?.includes('Rajnagar');
+              return (
+                <Marker 
+                  key={fac.asset_id} 
+                  position={[fac.lat, fac.lon]} 
+                  icon={isImpassable ? hospitalIsolatedIcon : hospitalIcon}
+                  eventHandlers={{
+                    click: () => onSelectAsset && onSelectAsset({ ...fac, asset_type: 'hospital' })
+                  }}
+                >
+                  <Popup>
+                    <div className="text-xs space-y-1 cursor-pointer font-sans p-1">
+                      <div className="font-bold text-slate-900 text-sm">{fac.name}</div>
+                      <div>Type: {fac.type} | Beds: {fac.bed_capacity} | Block: {fac.block}</div>
+                      <div className={isImpassable ? 'text-red-600 font-bold' : isDegraded ? 'text-amber-600 font-bold' : 'text-emerald-600'}>
+                        Access Status: {isImpassable ? 'IMPASSABLE (Total Road Isolation)' : isDegraded ? 'DEGRADED ACCESS (2.5x Travel Delay)' : 'Operational'}
+                      </div>
+                      <div className="text-blue-600 font-semibold pt-1">Click to inspect asset details &rarr;</div>
+                    </div>
+                  </Popup>
+                </Marker>
+              );
+            })}
+
+            {/* 2. Secondary Operational Facilities Block Clusters (Clutter Reduction) */}
+            {clusterList.map(cluster => (
+              <Marker
+                key={cluster.block}
+                position={[cluster.lat, cluster.lon]}
+                icon={createClusterIcon(cluster.count, cluster.block)}
+              >
+                <Popup>
+                  <div className="text-xs font-sans p-1">
+                    <div className="font-bold text-slate-900">{cluster.block} Sector</div>
+                    <div className="text-slate-600 font-medium">{cluster.count} operational health facilities</div>
+                    <div className="text-[10px] text-emerald-600 pt-0.5">Primary road access operational</div>
                   </div>
-                  <div className="text-blue-600 font-semibold pt-1">Click to inspect asset details &rarr;</div>
-                </div>
-              </Popup>
-            </Marker>
-          );
-        })}
+                </Popup>
+              </Marker>
+            ))}
+          </>
+        )}
 
         {/* Cyclone Shelters */}
         {layers.shelters && shelters.map(sh => (

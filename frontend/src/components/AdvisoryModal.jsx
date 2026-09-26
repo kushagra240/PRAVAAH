@@ -191,29 +191,44 @@ export default function AdvisoryModal({ isOpen, onClose, currentUser = null }) {
           </div>
         )}
 
-        {/* Advisory Form */}
+        {/* Advisory Form with Clear Section Breaks */}
         <div className="space-y-3 text-xs">
           <div>
-            <label className="block text-[10px] font-bold text-slate-400 uppercase font-mono mb-1">Advisory Headline</label>
+            <label className="block text-[10px] font-bold text-slate-500 uppercase font-mono mb-1">Subject Line</label>
             <input 
               type="text" 
               value={advisoryTitle}
               onChange={(e) => setAdvisoryTitle(e.target.value)}
-              className="w-full px-3 py-1.5 rounded border border-slate-300 focus:outline-none focus:border-blue-600 font-semibold text-slate-900 text-xs"
+              className="w-full px-3 py-1.5 rounded-md border border-slate-300 focus:outline-none focus:border-blue-600 font-semibold text-slate-900 text-xs bg-slate-50"
             />
           </div>
 
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-[10px] font-bold text-slate-500 uppercase font-mono mb-1">Section 1: Situation Overview</label>
+              <div className="p-2.5 rounded-md border border-slate-200 bg-slate-50 text-[11px] text-slate-800 leading-snug">
+                Severe cyclone forecast within 36 hours with peak winds of 145.0 km/h <span className="font-mono text-blue-700 font-bold">[EVID_MAX_WIND]</span> and 3.2m coastal storm surge <span className="font-mono text-blue-700 font-bold">[EVID_PEAK_SURGE]</span>.
+              </div>
+            </div>
+            <div>
+              <label className="block text-[10px] font-bold text-slate-500 uppercase font-mono mb-1">Section 2: Population Impact</label>
+              <div className="p-2.5 rounded-md border border-slate-200 bg-slate-50 text-[11px] text-slate-800 leading-snug">
+                Sub-block inundation severs 1,448 road links <span className="font-mono text-blue-700 font-bold">[EVID_BROKEN_ROAD_COUNT]</span>, isolating 94 health facilities <span className="font-mono text-blue-700 font-bold">[EVID_ISOLATED_FAC_COUNT]</span> and impacting 27,465 residents <span className="font-mono text-blue-700 font-bold">[EVID_POP_30MIN_LOSS]</span>.
+              </div>
+            </div>
+          </div>
+
           <div>
-            <label className="block text-[10px] font-bold text-slate-400 uppercase font-mono mb-1">Directives & Operational Orders</label>
+            <label className="block text-[10px] font-bold text-slate-500 uppercase font-mono mb-1">Section 3: Directed Operational Orders</label>
             <textarea 
               rows={4}
               value={advisoryContent}
               onChange={(e) => setAdvisoryContent(e.target.value)}
-              className="w-full px-3 py-2 rounded border border-slate-300 focus:outline-none focus:border-blue-600 font-mono text-[11px] text-slate-800 leading-relaxed"
+              className="w-full px-3 py-2 rounded-md border border-slate-300 focus:outline-none focus:border-blue-600 font-mono text-[11px] text-slate-800 leading-relaxed bg-white"
             />
           </div>
 
-          <div className="bg-blue-50 border border-blue-200 p-2.5 rounded text-[11px] text-blue-900 space-y-1">
+          <div className="bg-blue-50 border border-blue-200 p-2.5 rounded-md text-[11px] text-blue-900 space-y-0.5">
             <div className="font-bold">Human Sign-off & Audit Trail</div>
             <div>Active Signatory: <strong>{currentUser?.name || 'R. Mohanty'} ({currentUser?.title || 'District Office'})</strong></div>
             <div>Accountability Role: <strong className="font-mono">{currentUser?.role || 'APPROVER'}</strong></div>

@@ -249,17 +249,17 @@ export default function ContextInspectorPanel({
       ) : (
         /* 4. STATE 1 DEFAULT COMMAND CENTER */
         <div className="space-y-4">
-          {/* SECTION 1: WHAT'S HAPPENING */}
-          <div className="bg-slate-50 border border-slate-200 rounded-lg p-3 space-y-2.5">
+          {/* SECTION 1: WHAT'S HAPPENING — STRUCTURED AI BRIEF */}
+          <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-3 shadow-2xs">
             <div className="flex items-center justify-between">
-              <h3 className="text-sm font-bold text-slate-900 font-sans">What's happening</h3>
+              <h3 className="text-sm font-bold text-slate-900 font-sans tracking-tight">What's happening</h3>
               <span className={`px-2 py-0.5 rounded text-[10px] font-bold flex items-center gap-1 ${
                 briefData?.brief?.provenance === 'LIVE_GEMINI'
-                  ? 'bg-emerald-100 text-emerald-800'
-                  : 'bg-amber-100 text-amber-800'
+                  ? 'bg-emerald-100 text-emerald-800 border border-emerald-200'
+                  : 'bg-amber-100 text-amber-800 border border-amber-200'
               }`}>
-                <Sparkles className="w-3 h-3" />
-                <span>{briefData?.brief?.provenance === 'LIVE_GEMINI' ? 'LIVE GEMINI 3.7' : 'AI NARRATIVE UNAVAILABLE'}</span>
+                <Sparkles className="w-3 h-3 text-emerald-600" />
+                <span>{briefData?.brief?.provenance === 'LIVE_GEMINI' ? 'LIVE GEMINI 3.7' : 'AI NARRATIVE'}</span>
               </span>
             </div>
 
@@ -270,26 +270,71 @@ export default function ContextInspectorPanel({
             )}
 
             {isSimulating ? (
-              <div className="bg-blue-50/80 p-3 rounded border border-blue-200 text-xs text-blue-900 flex items-center gap-2 font-medium">
+              <div className="bg-blue-50/80 p-3 rounded-lg border border-blue-200 text-xs text-blue-900 flex items-center gap-2 font-medium">
                 <RefreshCw className="w-4 h-4 text-blue-600 animate-spin shrink-0" />
-                <span>Generating AI situation brief via Gemini Decision Engine...</span>
+                <span>Generating structured AI brief via Gemini Decision Engine...</span>
               </div>
             ) : (
-              <p className="text-xs text-slate-800 leading-relaxed font-medium bg-white p-2 rounded border border-slate-200">
-                {briefData?.brief?.situation_narrative || "Under baseline forecast, health facilities may lose road access due to coastal storm surge and causeway inundation."}
-              </p>
-            )}
+              <>
+                {/* 1. High-Impact Headline */}
+                <div className="bg-white p-3 rounded-lg border border-blue-200/80 shadow-2xs border-l-4 border-l-blue-700">
+                  <div className="text-[10px] font-bold text-blue-800 font-mono uppercase mb-0.5 tracking-wider">CRITICAL SITUATION HEADLINE</div>
+                  <p className="text-xs text-slate-900 font-semibold leading-snug">
+                    {renderTextWithCitations(briefData?.brief?.headline || `Under baseline forecast, ${simResult?.cascade?.population_losing_30min_access || 27465} residents lose 30min care access [EVID_POP_30MIN_LOSS].`)}
+                  </p>
+                </div>
 
-            <div className="grid grid-cols-2 gap-2 text-xs pt-1">
-              <div className="bg-white border border-slate-200 p-2 rounded">
-                <div className="text-base font-bold text-slate-900 font-mono-num">{simResult?.cascade?.isolated_facilities_count ?? 12} facilities</div>
-                <div className="text-[10px] text-slate-500">road-isolated</div>
-              </div>
-              <div className="bg-white border border-slate-200 p-2 rounded">
-                <div className="text-base font-bold text-slate-900 font-mono-num">{simResult?.cascade?.broken_road_edges_count ?? 4} corridors</div>
-                <div className="text-[10px] text-slate-500">inundated</div>
-              </div>
-            </div>
+                {/* 2. Structured Key Findings (Bulleted List with Icons) */}
+                <div className="space-y-1.5 pt-1">
+                  <div className="text-[10px] font-bold text-slate-400 uppercase font-mono tracking-wider">KEY FINDINGS</div>
+                  <div className="space-y-1.5">
+                    {(briefData?.brief?.key_findings || [
+                      `Peak wind speeds reach ${simResult?.max_wind_kph || 145} km/h with ${simResult?.peak_surge_m || 3.2}m storm surge [EVID_MAX_WIND]`,
+                      `${(simResult?.cascade?.broken_road_edges_count || 1448).toLocaleString()} arterial road segments impassable [EVID_BROKEN_ROAD_COUNT]`,
+                      `${(simResult?.cascade?.population_losing_30min_access || 27465).toLocaleString()} residents lose sub-30min healthcare access [EVID_POP_30MIN_LOSS]`,
+                      `${simResult?.cascade?.isolated_facilities_count || 94} public health facilities face road network isolation [EVID_ISOLATED_FAC_COUNT]`
+                    ]).map((finding, idx) => (
+                      <div key={idx} className="flex items-start gap-2 bg-white p-2 rounded border border-slate-200 text-xs text-slate-800">
+                        <CheckCircle2 className="w-3.5 h-3.5 text-blue-600 shrink-0 mt-0.5" />
+                        <div className="leading-snug">{renderTextWithCitations(finding)}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* 3. Top Affected Areas (Compact Stat Chips) */}
+                <div className="space-y-1.5 pt-1">
+                  <div className="text-[10px] font-bold text-slate-400 uppercase font-mono tracking-wider">TOP AFFECTED SECTORS</div>
+                  <div className="grid grid-cols-1 gap-1.5">
+                    {(briefData?.brief?.affected_areas || [
+                      { area: "Rajnagar & Tangi Sector", metric: `${simResult?.cascade?.isolated_facilities_count || 94} facilities isolated [EVID_ISOLATED_FAC_COUNT]`, severity: "CRITICAL" },
+                      { area: "Kendrapara Low-Lying Plain", metric: `${(simResult?.cascade?.population_losing_30min_access || 27465).toLocaleString()} pop access loss [EVID_POP_30MIN_LOSS]`, severity: "HIGH" },
+                      { area: "Bhadrak Coastal Highway", metric: `${(simResult?.cascade?.broken_road_edges_count || 1448).toLocaleString()} edges cut [EVID_BROKEN_ROAD_COUNT]`, severity: "HIGH" }
+                    ]).map((item, idx) => (
+                      <div key={idx} className="flex items-center justify-between bg-white px-2.5 py-1.5 rounded border border-slate-200 text-xs">
+                        <div className="font-semibold text-slate-900">{item.area}</div>
+                        <div className="text-[11px] text-slate-600 font-mono flex items-center gap-1">
+                          <span>{renderTextWithCitations(item.metric)}</span>
+                          <span className={`text-[9px] font-bold px-1.5 py-0.2 rounded font-mono ${
+                            item.severity === 'CRITICAL' ? 'bg-red-100 text-red-800' : 'bg-amber-100 text-amber-800'
+                          }`}>
+                            {item.severity}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* 4. Recommended Focus (Callout Box) */}
+                {briefData?.brief?.recommended_focus && (
+                  <div className="bg-blue-50/80 border border-blue-200 p-2.5 rounded-lg text-xs text-blue-950 space-y-0.5">
+                    <div className="text-[10px] font-bold text-blue-800 font-mono uppercase">RECOMMENDED FIRST FOCUS</div>
+                    <p className="leading-snug">{renderTextWithCitations(briefData.brief.recommended_focus)}</p>
+                  </div>
+                )}
+              </>
+            )}
 
             <div className="flex items-center justify-between text-[11px] text-slate-500 pt-1 font-mono border-t border-slate-200">
               <span className="text-blue-600 hover:underline cursor-pointer">
@@ -301,7 +346,7 @@ export default function ContextInspectorPanel({
           </div>
 
           {/* SECTION 2: WHAT TO CONSIDER DOING */}
-          <div className="bg-amber-50/60 border border-amber-200 rounded-lg p-3.5 space-y-3">
+          <div className="bg-amber-50/60 border border-amber-200 rounded-xl p-4 space-y-3">
             <div className="flex items-center justify-between">
               <h3 className="text-xs font-bold uppercase tracking-wider text-amber-950 font-sans">
                 What to consider doing

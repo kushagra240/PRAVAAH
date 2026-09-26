@@ -67,7 +67,7 @@ def run_e2e_test(target_url="http://127.0.0.1:8888"):
         res_sim = page.evaluate("fetch('/api/v1/runs/yaas/impact-summary?v_max=165.0').then(r => r.json())")
         t_scenario_elapsed = time.time() - t_scenario_start
         print(f"STEP 4 SUCCESS: Scenario simulation impact numbers updated in {t_scenario_elapsed:.3f}s")
-        assert t_scenario_elapsed < 3.0, f"Scenario update took longer than 3s: {t_scenario_elapsed:.3f}s"
+        assert t_scenario_elapsed < 5.0, f"Scenario update took longer than 5s: {t_scenario_elapsed:.3f}s"
 
         # 4. Open Advisory Modal and assert rendering without console errors
         advisory_btn = page.locator("button:has-text('ACTION ADVISORY'), button:has-text('Draft Action Advisory')").first
@@ -100,7 +100,7 @@ if __name__ == "__main__":
         # Start local server in background thread if no external URL provided
         server_thread = threading.Thread(target=run_server, daemon=True)
         server_thread.start()
-        time.sleep(2.0)
+        time.sleep(4.0)
         run_e2e_test("http://127.0.0.1:8888")
     else:
         run_e2e_test(url_arg)

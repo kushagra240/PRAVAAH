@@ -25,14 +25,18 @@ app.include_router(api_v1_router, prefix=settings.API_V1_STR)
 
 @app.on_event("startup")
 def prewarm_cache():
-    """Pre-warms baseline scenario impact summary, AI decision brief, and spatial indices on startup."""
-    try:
-        from backend.pravaah.api.v1.router import get_run_impact_summary, generate_decision_brief, SimulationRequest
-        get_run_impact_summary("yaas")
-        generate_decision_brief(SimulationRequest())
-        print("[Startup] Pre-warmed baseline scenario impact summary and AI decision brief cache.")
-    except Exception as e:
-        print(f"Prewarm warning: {e}")
+    """Pre-warms baseline scenario impact summary and AI decision brief in background thread on startup."""
+    import threading
+    def _do_prewarm():
+        try:
+            from backend.pravaah.api.v1.router import get_run_impact_summary, generate_decision_brief, SimulationRequest
+            get_run_impact_summary("yaas")
+            generate_decision_brief(SimulationRequest())
+            print("[Startup] Background pre-warm of baseline impact summary and AI decision brief completed.")
+        except Exception as e:
+            print(f"Prewarm warning: {e}")
+
+    threading.Thread(target=_do_prewarm, daemon=True).start()
 
 # Mount built React frontend static distribution if dist exists
 dist_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "frontend", "dist"))

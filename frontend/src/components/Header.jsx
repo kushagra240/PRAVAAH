@@ -6,7 +6,9 @@ export default function Header({
   selectedTrack = null, 
   onSelectTrack = null,
   currentState = 1,
-  onOpenAdvisoryModal = null
+  onOpenAdvisoryModal = null,
+  currentUser = null,
+  onOpenLoginModal = null
 }) {
   return (
     <header className="h-[52px] bg-white border-b border-gray-200 px-4 flex items-center justify-between z-30 shrink-0 select-none shadow-xs">
@@ -48,14 +50,26 @@ export default function Header({
           <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
         </button>
 
-        {/* User Badge */}
-        <div className="flex items-center gap-2 border-l border-gray-200 pl-3">
-          <div className="w-7 h-7 rounded-full bg-[#0F2942] text-white flex items-center justify-center font-bold text-xs">
-            <User className="w-3.5 h-3.5" />
+        {/* User Profile & Role Switcher Badge */}
+        <div 
+          onClick={onOpenLoginModal}
+          className="flex items-center gap-2 border-l border-gray-200 pl-3 cursor-pointer hover:opacity-90 transition-all group"
+          title="Click to switch role (Approver vs Analyst)"
+        >
+          <div className={`w-7 h-7 rounded-full ${currentUser?.role === 'APPROVER' ? 'bg-emerald-700' : 'bg-blue-700'} text-white flex items-center justify-center font-bold text-xs shadow-xs`}>
+            {currentUser?.avatar || 'RM'}
           </div>
           <div className="hidden lg:block text-left text-xs leading-tight">
-            <div className="font-semibold text-gray-900">R. Mohanty</div>
-            <div className="text-[10px] text-gray-500">District Office</div>
+            <div className="font-semibold text-gray-900 group-hover:text-blue-700 flex items-center gap-1">
+              <span>{currentUser?.name || 'R. Mohanty'}</span>
+              <ChevronDown className="w-3 h-3 text-gray-400 group-hover:text-blue-600" />
+            </div>
+            <div className="flex items-center gap-1 text-[10px]">
+              <span className={`font-bold font-mono px-1 rounded ${currentUser?.role === 'APPROVER' ? 'bg-emerald-100 text-emerald-800' : 'bg-blue-100 text-blue-800'}`}>
+                {currentUser?.role || 'APPROVER'}
+              </span>
+              <span className="text-gray-400">({currentUser?.department?.split(' ')[0] || 'District'})</span>
+            </div>
           </div>
         </div>
       </div>

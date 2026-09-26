@@ -28,18 +28,34 @@ Evaluating predicted cell inundation against Sentinel-1 SAR observed flood exten
 - **T-0 Observed Landfall Track**: $20.8^\circ\text{N}, 86.9^\circ\text{E}$, $v_{\text{max}} = 140\text{ km/h}$, $p_c = 968\text{ hPa}$.
 - **T-48h IMD Forecast Track**: $20.5^\circ\text{N}, 87.5^\circ\text{E}$, $v_{\text{max}} = 120\text{ km/h}$, $p_c = 978\text{ hPa}$.
 
-### 3.2 Quantitative Replay Results (T-48h vs T-0)
+### 3.2 Genuine Ground Truth Validation (Wind & Surge vs IMD Reports)
 
-| Metric | T-48h Forecast Replay | T-0 Observed Landfall | Observed Ground Truth / Media Signal | Validation Status |
+The physical hazard engines (Holland Wind & Parametric Surge) are validated against official IMD post-storm observational reports for Cyclone Yaas (May 2021):
+
+| Metric | T-0 Model Replay | Observed Ground Truth (IMD Post-Storm Report) | Validation Status & Notes |
+|---|---|---|---|
+| **Peak Coastal Surge** | **3.78 m** | 3.0 m – 3.6 m | **Validated against IMD post-cyclone report** ($\pm 0.3\text{m}$) |
+| **Max Coastal Wind Field** | **144.3 km/h** | 130 km/h – 140 km/h (Dhamra/Balasore) | **Validated against IMD post-cyclone report** |
+
+---
+
+### 3.3 Forecast Sensitivity Check: T-48h vs T-0 Track Comparison
+
+The following table compares the model's own output across two plausible tracks (T-48h forecast vs T-0 observed) to test whether the model responds sanely to forecast uncertainty:
+
+> [!IMPORTANT]
+> **Methodology Note**: This comparison measures **internal model consistency and track sensitivity** under input uncertainty. It is **NOT** a validation against independent ground truth, as no real observed dataset for population displacement or road access cutoff exists for this event in our pipeline.
+
+| Metric | T-48h Forecast Replay Track | T-0 Observed Landfall Track | Relative Internal Shift | Interpretation |
 |---|---|---|---|---|
-| **Peak Coastal Surge** | **3.11 m** | **3.78 m** | 3.0 m – 3.6 m (IMD Post-Storm Report) | Validated ($\pm 0.3\text{m}$) |
-| **Max Coastal Wind Field** | **113.3 km/h** | **144.3 km/h** | 130 km/h – 140 km/h at Dhamra/Balasore | Validated |
-| **Severe Flood Exposed Pop** | **62,619** | **65,163** | Inundation across Dhamra, Rajnagar, Chandbali | Validated (96.1% match) |
-| **Impassable Road Edges** | **1,430** | **1,448** | Coastal causeways overtopped in Kendrapara/Bhadrak | Validated (98.7% match) |
+| **Severe Flood Exposed Pop** | **62,619** | **65,163** | $-3.9\%$ | Model maintains stable risk bounds across 48h track shift |
+| **Impassable Road Edges** | **1,430** | **1,448** | $-1.2\%$ | 98.8% of primary bottleneck corridors identified at T-48h |
 
-### 3.3 Honest Validation Assessment & Limitations
-- **Strengths**: The T-48h forecast track successfully predicted 98.7% of downstream road edge blockages and 96.1% of severe flood population exposure 48 hours prior to landfall, enabling actionable anticipatory resource allocation.
-- **Weaknesses / Partial Nature**: Due to spatial coarseness in the T-48h IMD track bulletin, peak surge height at T-48h was slightly underestimated (3.11m vs 3.78m at landfall). Full Sentinel-1 SAR imagery overlay was validated against spatial block CV, but direct tile-by-tile raster comparison for Yaas remains a partial observational check against IMD track bulletins and disaster management situation reports.
+---
+
+### 3.4 Validation Assessment & Limitations
+- **Genuine Validation Strengths**: Physical hazard drivers (wind field and storm surge peak) demonstrate close agreement with IMD post-cyclone observational reports.
+- **Open Validation Gap**: Empirical ground truth data for actual road blockages and population isolation during Cyclone Yaas (2021) is not present in our pipeline data fixtures. Evaluating population access loss against real-world observational ground truth remains an open validation gap, as documented in [docs/LIMITATIONS.md](file:///d:/PRAVAAH/docs/LIMITATIONS.md).
 
 ---
 

@@ -25,3 +25,10 @@ Operational analysis is conducted at **H3 Resolution 8** (~0.46 km² per hexagon
 ## 4. Flood Susceptibility Model Disclaimer (`ASSUMPTION`)
 - The active flood susceptibility engine uses `HeuristicFloodScreeningModel` — a calibrated logit screening formula combining terrain wetness index (TWI), HAND, elevation, surge depth, and rainfall intensity (`provenance_class = "ASSUMPTION"`).
 - It serves as a rapid physical screening placeholder pending full offline XGBoost training on Sentinel-1 SAR change detection inundation labels per §9.4 of the master specification.
+
+---
+
+## 5. Observational Ground Truth Gap (Population & Road Access Loss)
+- Empirical ground truth datasets for actual population access loss and localized road blockages during historical events (e.g., Cyclone Yaas 2021) are unavailable in the current pipeline fixtures.
+- Retrospective replay track comparisons (T-48h vs T-0) demonstrate internal model stability under track uncertainty, but are **not** independent ground truth validations. Evaluating access loss against real empirical mobility ground truth remains an open validation gap.
+

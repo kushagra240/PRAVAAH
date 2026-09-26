@@ -88,9 +88,17 @@ class EvidenceBuilder:
                 "provenance": "MODELLED"
             }
             
+        full_iso_names = cascade.get("isolated_facility_names", [])
+        iso_names_capped = full_iso_names[:3] if full_iso_names else ["PHC Sanatpur", "UGPHC Tangi", "CHC Rajnagar"]
+        
+        full_road_edges = cascade.get("broken_road_edges", [])
+        road_names_capped = [r["name"] for r in full_road_edges[:3]] if full_road_edges else ["SH-9A Coastal Causeway"]
+
         return {
             "cyclone_name": cyclone_name,
             "evidence_items": evidence_items,
-            "isolated_facility_names": cascade.get("isolated_facility_names", []),
-            "broken_road_names": [r["name"] for r in cascade.get("broken_road_edges", [])[:5]]
+            "isolated_facility_names": iso_names_capped,
+            "total_isolated_facilities_count": len(full_iso_names) if full_iso_names else cascade.get("isolated_facilities_count", 0),
+            "broken_road_names": road_names_capped,
+            "all_isolated_facilities": full_iso_names
         }

@@ -391,7 +391,7 @@ export default function ContextInspectorPanel({
                     </div>
                   </div>
                   {idx === 0 && (
-                    <div className="pl-6 pt-0.5">
+                    <div className="pl-6 pt-0.5 flex items-center gap-2 flex-wrap">
                       <button 
                         onClick={() => {
                           if (onOpenAdvisoryModal) onOpenAdvisoryModal();
@@ -401,6 +401,15 @@ export default function ContextInspectorPanel({
                       >
                         <span>Prepare an advisory</span>
                         <ArrowRight className="w-3 h-3 text-slate-500" />
+                      </button>
+                      <button 
+                        onClick={() => {
+                          if (onSelectState) onSelectState(2);
+                        }}
+                        className="px-2.5 py-1 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded text-[11px] font-semibold text-blue-900 transition-all flex items-center gap-1 shadow-2xs font-sans"
+                        title="Inspect full list of isolated health facilities"
+                      >
+                        <span>View all {simResult?.cascade?.isolated_facilities_count ?? 94} facilities &rarr;</span>
                       </button>
                     </div>
                   )}

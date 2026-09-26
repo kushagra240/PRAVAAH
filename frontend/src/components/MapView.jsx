@@ -43,6 +43,25 @@ const createClusterIcon = (count, blockName) => new L.DivIcon({
   iconAnchor: [55, 12]
 });
 
+// Active Region Boundary Polygon (Coastal Odisha)
+const activeRegionBounds = [
+  [21.55, 86.40],
+  [21.72, 87.45],
+  [20.15, 87.05],
+  [19.95, 86.05],
+  [20.55, 85.85]
+];
+
+const activeRegionLabelIcon = new L.DivIcon({
+  className: 'custom-icon-active-region-label',
+  html: `<div style="background: rgba(15, 25, 40, 0.95); color: #F59E0B; border: 2px solid #F59E0B; border-radius: 20px; padding: 4px 12px; font-weight: 800; font-size: 11px; letter-spacing: 0.5px; font-family: monospace; box-shadow: 0 4px 14px rgba(245, 158, 11, 0.4); display: flex; align-items: center; gap: 6px; cursor: pointer; white-space: nowrap; backdrop-filter: blur(4px);">
+           <span style="width: 8px; height: 8px; background: #F59E0B; border-radius: 50%; display: inline-block;" class="animate-pulse"></span>
+           <span>COASTAL ODISHA — ACTIVE REGION</span>
+         </div>`,
+  iconSize: [230, 30],
+  iconAnchor: [115, 15]
+});
+
 export default function MapView({ 
   gridCells = [], 
   simResult = null, 
@@ -163,6 +182,33 @@ export default function MapView({
             tileerror: () => setTileError(true)
           }}
         />
+
+        {/* Distinct Active Region Boundary (Gold/Amber Outer Line + Persistent Label) */}
+        <Polygon 
+          positions={activeRegionBounds}
+          pathOptions={{
+            color: '#F59E0B',
+            weight: 3.5,
+            dashArray: '8, 6',
+            fillColor: '#F59E0B',
+            fillOpacity: 0.02
+          }}
+        />
+
+        <Marker 
+          position={[21.58, 86.92]} 
+          icon={activeRegionLabelIcon}
+          eventHandlers={{
+            click: (e) => {
+              const map = e.target._map;
+              if (map) map.flyTo([20.72, 86.85], 9.5);
+            }
+          }}
+        >
+          <Tooltip direction="bottom" offset={[0, 10]}>
+            <div className="text-[10px] font-sans font-medium text-slate-800">Click to re-center map to full active region extent</div>
+          </Tooltip>
+        </Marker>
 
         {/* Wind Field Radius Cones */}
         {layers.wind && (

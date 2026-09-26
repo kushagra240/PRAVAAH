@@ -102,14 +102,15 @@ EVIDENCE BUNDLE:
 CRITICAL RULES:
 1. Every quantitative claim MUST cite the corresponding evidence ID in brackets, e.g., [EVID_POP_30MIN_LOSS].
 2. Do NOT invent numbers. Use ONLY numbers from the EVIDENCE BUNDLE.
-3. Each bullet in key_findings and each item in affected_areas MUST carry at most ONE citation.
-4. Output MUST be valid JSON with keys:
+3. Each bullet in key_findings and priority_actions MUST be capped at roughly 200 characters max (1-2 sentences).
+4. NEVER list more than 3 facility or road names inline. Always cap lists at 3 (e.g., "including PHC Sanatpur, UGPHC Tangi, and 91 others [EVID_ISOLATED_FAC_COUNT]").
+5. Output MUST be valid JSON with keys:
    - "headline": Short high-impact 1-sentence summary
    - "key_findings": Array of 3-5 short single-sentence strings, each with its own citation (e.g., ["1,448 road segments impassable [EVID_BROKEN_ROAD_COUNT]", "27,465 residents lose sub-30min healthcare access [EVID_POP_30MIN_LOSS]"])
    - "affected_areas": Array of 3-5 objects with keys "area", "metric", "severity" (e.g., [{{"area": "Rajnagar Block", "metric": "94 facilities isolated [EVID_ISOLATED_FAC_COUNT]", "severity": "CRITICAL"}}, ...])
    - "recommended_focus": 1-2 sentences max on where attention should go first
    - "situation_narrative": 2 short sentences summarizing key facts
-   - "priority_actions": Array of 3 actionable recommendations
+   - "priority_actions": Array of 3 actionable recommendations (each under 200 chars, capped facility lists)
    - "draft_advisory": Object with keys "subject", "situation", "population_impact", "recommended_actions"
 
 Return strictly valid JSON format.
@@ -123,11 +124,24 @@ Return strictly valid JSON format.
         max_wind = ev.get("EVID_MAX_WIND", {}).get("value", 145.0)
         pop_30min = ev.get("EVID_POP_30MIN_LOSS", {}).get("value", 27465)
         pop_60min = ev.get("EVID_POP_60MIN_LOSS", {}).get("value", 31214)
-        iso_facs = ev.get("EVID_ISOLATED_FAC_COUNT", {}).get("value", 94)
-        broken_roads = ev.get("EVID_BROKEN_ROAD_COUNT", {}).get("value", 1448)
+        iso_facs = int(ev.get("EVID_ISOLATED_FAC_COUNT", {}).get("value", 94))
+        broken_roads = int(ev.get("EVID_BROKEN_ROAD_COUNT", {}).get("value", 1448))
         
-        iso_names = ", ".join(evidence.get("isolated_facility_names", ["PHC Sanatpur", "UGPHC Tangi"]))
-        broken_road_names = ", ".join(evidence.get("broken_road_names", ["SH-9A Coastal Causeway"]))
+        raw_iso_names = evidence.get("isolated_facility_names", ["PHC Sanatpur", "UGPHC Tangi", "CHC Rajnagar"])
+        top3_iso = raw_iso_names[:3]
+        rem_fac_count = max(0, iso_facs - len(top3_iso))
+        if rem_fac_count > 0:
+            iso_names_summary = f"{', '.join(top3_iso)}, and {rem_fac_count} others"
+        else:
+            iso_names_summary = ", ".join(top3_iso)
+
+        raw_road_names = evidence.get("broken_road_names", ["SH-9A Coastal Causeway"])
+        top3_roads = raw_road_names[:3]
+        rem_road_count = max(0, broken_roads - len(top3_roads))
+        if rem_road_count > 0:
+            broken_road_summary = f"{', '.join(top3_roads)}, and {rem_road_count} others"
+        else:
+            broken_road_summary = ", ".join(top3_roads)
 
         headline = f"Under baseline forecast, {pop_30min:,} people lose sub-30min hospital access with {iso_facs} facilities road-isolated [EVID_POP_30MIN_LOSS] [EVID_ISOLATED_FAC_COUNT]."
         
@@ -156,7 +170,7 @@ Return strictly valid JSON format.
             }
         ]
 
-        recommended_focus = f"Pre-position 4 watercraft rescue units at Chandbali staging depot and deploy emergency generators to isolated health centers ({iso_names}) before T-14h overtopping [EVID_ISOLATED_FAC_COUNT]."
+        recommended_focus = f"Pre-position 4 watercraft rescue units at Chandbali staging depot and deploy emergency generators to isolated health centers (including {iso_names_summary}) before T-14h overtopping [EVID_ISOLATED_FAC_COUNT]."
 
         narrative = (
             f"Baseline forecast for {cyclone} shows {max_wind} km/h winds [EVID_MAX_WIND] and {peak_surge}m coastal surge [EVID_PEAK_SURGE]. "
@@ -165,16 +179,16 @@ Return strictly valid JSON format.
         )
         
         actions = [
-            f"Pre-position mobile medical units and emergency generators at key hub facilities ({iso_names}) prior to causeway overtopping.",
-            f"Deploy ODRAF / NDRF flood rescue teams along arterial road corridors ({broken_road_names}) before landfall.",
-            f"Activate high-capacity multi-purpose cyclone shelters in coastal blocks with high flood susceptibility."
+            f"Pre-position mobile medical units and emergency generators at key hub facilities ({iso_names_summary}) prior to causeway overtopping [EVID_ISOLATED_FAC_COUNT].",
+            f"Deploy ODRAF / NDRF flood rescue teams along arterial road corridors ({broken_road_summary}) before landfall [EVID_BROKEN_ROAD_COUNT].",
+            f"Activate high-capacity multi-purpose cyclone shelters in coastal blocks with high flood susceptibility [EVID_POP_SEVERE_FLOOD]."
         ]
         
         draft = {
             "subject": f"Pre-Landfall Emergency Infrastructure Disruption & Evacuation Order — {cyclone}",
             "situation": f"Severe cyclone forecast within 36 hours with peak winds of {max_wind} km/h [EVID_MAX_WIND] and {peak_surge}m coastal storm surge [EVID_PEAK_SURGE].",
             "population_impact": f"Sub-block inundation severs {broken_roads:,} arterial road links [EVID_BROKEN_ROAD_COUNT], placing {iso_facs} health facilities under total road isolation [EVID_ISOLATED_FAC_COUNT] and cutting off {pop_30min:,} residents from sub-30min care [EVID_POP_30MIN_LOSS].",
-            "recommended_actions": f"1. Block Development Officers in Kendrapara & Bhadrak must complete evacuation to Multi-Purpose Cyclone Shelters by 18:00 hrs.\n2. Pre-position 4 inflatable motorboats at Chandbali Staging Depot for watercraft rescue to {iso_names}.\n3. Reroute emergency ambulances around severed {broken_road_names} coastal causeways."
+            "recommended_actions": f"1. Block Development Officers in Kendrapara & Bhadrak must complete evacuation to Multi-Purpose Cyclone Shelters by 18:00 hrs.\n2. Pre-position 4 inflatable motorboats at Chandbali Staging Depot for watercraft rescue to {iso_names_summary}.\n3. Reroute emergency ambulances around severed {broken_road_summary} coastal causeways."
         }
         
         return {

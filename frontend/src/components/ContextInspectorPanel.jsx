@@ -244,26 +244,44 @@ export default function ContextInspectorPanel({
 
           {/* STATE 7: SCENARIO DELTA OUTPUT */}
           <div className="bg-amber-50 border border-amber-300 rounded-md p-3 space-y-2 text-xs">
-            <div className="text-[10px] font-bold text-amber-800 uppercase font-mono">BASELINE → SCENARIO DELTA</div>
+            <div className="text-[10px] font-bold text-amber-800 uppercase font-mono">BASELINE → SCENARIO DELTA & TOTALS</div>
             <div className="space-y-1.5 text-slate-800">
-              <div className="flex justify-between border-b border-amber-200 pb-1 font-medium">
-                <span>Affected Road Links</span>
-                <span className="font-bold text-red-600 font-mono-num">
-                  +{simResult?.cascade?.broken_road_edges_count ?? 3} links
-                </span>
-              </div>
-              <div className="flex justify-between border-b border-amber-200 pb-1 font-medium">
-                <span>Isolated Health Facilities</span>
-                <span className="font-bold text-red-600 font-mono-num">
-                  +{simResult?.cascade?.isolated_facilities_count ?? 2} facilities
-                </span>
-              </div>
-              <div className="flex justify-between font-medium">
-                <span>Pop Beyond 30m Access</span>
-                <span className="font-bold text-red-700 font-mono-num">
-                  +{(simResult?.cascade?.population_losing_30min_access ?? 84000).toLocaleString()} people
-                </span>
-              </div>
+              {(() => {
+                const baseRoads = 1448;
+                const baseFacs = 94;
+                const basePop = 27465;
+
+                const currRoads = simResult?.cascade?.broken_road_edges_count ?? 1448;
+                const currFacs = simResult?.cascade?.isolated_facilities_count ?? 94;
+                const currPop = simResult?.cascade?.population_losing_30min_access ?? 27465;
+
+                const dRoads = currRoads - baseRoads;
+                const dFacs = currFacs - baseFacs;
+                const dPop = currPop - basePop;
+
+                return (
+                  <>
+                    <div className="flex justify-between border-b border-amber-200 pb-1 font-medium">
+                      <span>Affected Road Links</span>
+                      <span className="font-bold text-red-600 font-mono-num">
+                        {currRoads.toLocaleString()} links {dRoads > 0 ? `(+${dRoads.toLocaleString()})` : '(baseline)'}
+                      </span>
+                    </div>
+                    <div className="flex justify-between border-b border-amber-200 pb-1 font-medium">
+                      <span>Isolated Health Facilities</span>
+                      <span className="font-bold text-red-600 font-mono-num">
+                        {currFacs.toLocaleString()} facilities {dFacs > 0 ? `(+${dFacs.toLocaleString()})` : '(baseline)'}
+                      </span>
+                    </div>
+                    <div className="flex justify-between font-medium">
+                      <span>Pop Beyond 30m Access</span>
+                      <span className="font-bold text-red-700 font-mono-num">
+                        {currPop.toLocaleString()} people {dPop > 0 ? `(+${dPop.toLocaleString()})` : '(baseline)'}
+                      </span>
+                    </div>
+                  </>
+                );
+              })()}
             </div>
           </div>
         </div>

@@ -20,7 +20,8 @@ export default function Header({
         <div>
           <div className="flex items-center gap-2">
             <span className="font-bold text-base tracking-tight text-gray-900 font-sans">PRAVAAH</span>
-            <span className="text-[11px] font-medium text-gray-500">Civic Cyclone Preparedness</span>
+            <span className="text-[11px] font-medium text-gray-500 hidden xl:inline">Predictive Resilience & Vulnerability Analytics for Anticipatory Action Hub</span>
+            <span className="text-[11px] font-medium text-gray-500 xl:hidden">Civic Cyclone Forecaster</span>
           </div>
         </div>
       </div>

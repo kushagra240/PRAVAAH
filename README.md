@@ -32,7 +32,7 @@ It is a pre-landfall decision-support platform that converts an official cyclone
 **Architecture in one line:**
 ```
 Deterministic physics + calibrated ML  →  computes evidence (numbers)
-Gemini 3.7 Flash                       →  reasons over evidence (narrative, priorities, drafts)
+Gemini 3.6 Flash / 3.7 Flash           →  reasons over evidence (narrative, priorities, drafts)
 Human authority                        →  approves consequential action (advisory dispatch)
 ```
 
@@ -44,7 +44,7 @@ Human authority                        →  approves consequential action (advis
 - **Flood Susceptibility**: Supervised XGBoost model trained on Sentinel-1 SAR change detection inundation labels for Bay of Bengal cyclones.
 - **Surge Screening**: Peak parametric surge height equation (pressure deficit, radius of maximum winds, approach angle, bathymetry) + connected attenuated bathtub on Copernicus GLO-30 DEM.
 - **Road Network Cascade**: Multi-source Dijkstra shortest-path travel time solver on OpenStreetMap road graph (flooded edge removal $\to$ population & facility isolation).
-- **Gemini 3.7 Flash Decision Layer**: Reads structured `EvidenceBundle` JSON + map renders, generates briefs and draft advisories with machine-checked `evidence_id` citations.
+- **Gemini Decision Layer**: Configured via `GEMINI_MODEL` (`gemini-3.6-flash` active tier / `gemini-3.7-flash`). Reads structured `EvidenceBundle` JSON, generates structured briefs (headline, key_findings, affected_areas, recommended_focus) and draft advisories with machine-checked `evidence_id` citations.
 - **Human-in-the-Loop Workflow**: Draft $\to$ Review $\to$ Approve/Reject $\to$ Hash-chained Audit Log.
 
 ---

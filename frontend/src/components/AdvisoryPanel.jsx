@@ -65,13 +65,22 @@ export default function AdvisoryPanel({ briefData, currentUser = null }) {
 
   const handleUpdateStatus = async (status) => {
     if (!currentAdv) return;
+    setRoleNotice(null);
+
+    // GATING CHECK (§20): Only users with role 'APPROVER' can approve advisories
+    if (status === 'APPROVED' && currentUser?.role !== 'APPROVER') {
+      setRoleNotice(`🔒 Approval Restricted: Active account is ${currentUser?.name || 'A. Patnaik'} (${currentUser?.role || 'ANALYST'}). Approval requires an APPROVER role (e.g. R. Mohanty).`);
+      return;
+    }
+
     try {
+      const activeActor = currentUser ? `${currentUser.name} (${currentUser.title})` : actor;
       const res = await fetch(`/api/v1/advisories/${currentAdv.advisory_id}/status`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           status: status,
-          actor: actor,
+          actor: activeActor,
           notes: notes,
           updated_content: content
         })

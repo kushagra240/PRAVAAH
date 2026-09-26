@@ -79,6 +79,11 @@ export default function MapView({
     });
   }
 
+  const [tileError, setTileError] = useState(false);
+
+  // Transparent 1x1 data URL for tile fallback
+  const transparentTile = 'data:image/png;base64,iVBORw0KGgoAAAANSU53SUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=';
+
   return (
     <div className="relative w-full h-full bg-[#EAEFF5] select-none overflow-hidden">
       {/* Top Map Floating Scrubber & Radar Header (Matching Reference Image Overlay) */}
@@ -96,16 +101,28 @@ export default function MapView({
         </div>
       </div>
 
+      {/* Optional Basemap Failure Notice */}
+      {tileError && (
+        <div className="absolute top-14 left-1/2 -translate-x-1/2 z-[1000] bg-amber-500/90 text-white text-[11px] font-medium px-3 py-1 rounded-full shadow border border-amber-600 backdrop-blur-sm flex items-center gap-1.5">
+          <AlertTriangle className="w-3.5 h-3.5 text-white" />
+          <span>Basemap tiles offline / unavailable — displaying clean vector overlay</span>
+        </div>
+      )}
+
       <MapContainer 
         center={center} 
         zoom={9.5} 
         style={{ width: '100%', height: '100%' }}
         zoomControl={false}
       >
-        {/* Carto Positron Light Base Map */}
+        {/* OpenStreetMap Standard Free Basemap (Zero API key required) */}
         <TileLayer
-          url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
-          attribution='&copy; <a href="https://carto.com/">CARTO</a>'
+          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+          errorTileUrl={transparentTile}
+          eventHandlers={{
+            tileerror: () => setTileError(true)
+          }}
         />
 
         {/* Wind Field Radius Cones */}

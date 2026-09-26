@@ -16,7 +16,7 @@ PRAVAAH is designed for deployment on **Google Cloud Platform (GCP)**:
 
 | Variable | Description | Default / Example |
 |---|---|---|
-| `GEMINI_API_KEY` | Google AI Studio API Key for Gemini 3.7 Flash | `AIzaSy...` |
+| `GEMINI_API_KEY` | Google AI Studio API Key for Gemini 3.7 Flash | `<your-api-key>` |
 | `GEMINI_MODEL` | Pinned Gemini Model Identifier | `gemini-3.7-flash` |
 | `DATABASE_URL` | Database Connection String | `sqlite:///./pravaah.db` / `postgresql://user:pass@host/db` |
 | `DEFAULT_REGION` | Initial Region Identifier | `odisha_coastal` |

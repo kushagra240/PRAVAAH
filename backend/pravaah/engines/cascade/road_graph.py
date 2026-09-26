@@ -130,7 +130,13 @@ class RoadGraphCascadeEngine:
         dist_flooded_u = dijkstra(cs_flooded, directed=False, indices=self._baseline_unique_indices, return_predecessors=False)
         dist_flooded = dist_flooded_u[self._baseline_inv_map]
 
-        # Population reachability calculation across representative block nodes
+        # Population reachability calculation across all graph nodes per block
+        min_base_all = np.min(dist_baseline, axis=0) # shape (n_nodes,)
+        min_flood_all = np.min(dist_flooded, axis=0) # shape (n_nodes,)
+
+        is_loss_30 = (min_base_all <= 30.0) & (min_flood_all > 30.0)
+        is_loss_60 = (min_base_all <= 60.0) & (min_flood_all > 60.0)
+
         pop_loss_30min = 0
         pop_loss_60min = 0
         isolated_hospitals = []
@@ -141,18 +147,16 @@ class RoadGraphCascadeEngine:
             block_cube = df_cube[df_cube["admin_block"] == block_name]
             block_pop = int(block_cube["population"].sum()) if len(block_cube) > 0 else 5000
             
-            block_nodes = [idx for idx, n in enumerate(self.nodes) if n.get("block") == block_name]
-            if not block_nodes:
+            b_node_mask = np.array([n.get("block") == block_name for n in self.nodes])
+            b_nodes_count = np.sum(b_node_mask)
+            if b_nodes_count == 0:
                 continue
-            rep_node_idx = block_nodes[0]
+                
+            frac_30 = np.sum(is_loss_30 & b_node_mask) / b_nodes_count
+            frac_60 = np.sum(is_loss_60 & b_node_mask) / b_nodes_count
             
-            min_base_time = np.min(dist_baseline[:, rep_node_idx]) if len(fac_node_indices) > 0 else 15.0
-            min_flood_time = np.min(dist_flooded[:, rep_node_idx]) if len(fac_node_indices) > 0 else np.inf
-            
-            if min_base_time <= 30.0 and min_flood_time > 30.0:
-                pop_loss_30min += block_pop
-            if min_base_time <= 60.0 and min_flood_time > 60.0:
-                pop_loss_60min += block_pop
+            pop_loss_30min += int(block_pop * frac_30)
+            pop_loss_60min += int(block_pop * frac_60)
                 
         # Identify isolated health facilities
         for idx, fac in enumerate(health_facilities):

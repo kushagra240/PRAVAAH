@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ShieldCheck, FileText, CheckCircle, XCircle, Send, Lock, History } from 'lucide-react';
 
-export default function AdvisoryPanel({ briefData }) {
+export default function AdvisoryPanel({ briefData, currentUser = null }) {
   const draftText = briefData?.brief?.draft_advisory || "EMERGENCY CYCLONE ADVISORY — DRAFT IN PROGRESS";
   const evidenceIds = Object.keys(briefData?.evidence_bundle?.evidence_items || {});
 
@@ -9,8 +9,9 @@ export default function AdvisoryPanel({ briefData }) {
   const [auditTrail, setAuditTrail] = useState([]);
   const [currentAdv, setCurrentAdv] = useState(null);
   const [content, setContent] = useState(draftText);
-  const [actor, setActor] = useState('District Magistrate / Collector');
+  const [actor, setActor] = useState(currentUser?.name || 'District Magistrate / Collector');
   const [notes, setNotes] = useState('');
+  const [roleNotice, setRoleNotice] = useState(null);
 
   useEffect(() => {
     fetchAdvisories();

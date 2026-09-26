@@ -32,3 +32,13 @@ Operational analysis is conducted at **H3 Resolution 8** (~0.46 km² per hexagon
 - Empirical ground truth datasets for actual population access loss and localized road blockages during historical events (e.g., Cyclone Yaas 2021) are unavailable in the current pipeline fixtures.
 - Retrospective replay track comparisons (T-48h vs T-0) demonstrate internal model stability under track uncertainty, but are **not** independent ground truth validations. Evaluating access loss against real empirical mobility ground truth remains an open validation gap.
 
+---
+
+## 6. Demonstration Simplification — Role & Accountability Login Gate
+- **Authentication Scope:** In compliance with §20 of the master specification, PRAVAAH implements a minimal client-side role-gated authentication framework.
+- **Seeded Demo Identities:**
+  1. **R. Mohanty (District Collector & Magistrate)** — `Role: APPROVER`: Authorized with full statutory authority to sign, approve, and dispatch official CAP advisories.
+  2. **A. Patnaik (EOC Lead Risk Analyst)** — `Role: ANALYST`: Authorized to run cascade simulations, inspect evidence bundles, and draft advisories. Advisory approval capability is explicitly gated (`🔒 Approval Restricted`).
+- **Production Disclaimer:** This demonstration gate uses in-memory frontend state management and mock identity selection rather than a production-grade identity provider (IdP), OAuth2/OIDC server, or password-hashed backend database. Production deployment would integrate with State Single Sign-On (SSO / DigiLocker / e-Pramaan).
+
+

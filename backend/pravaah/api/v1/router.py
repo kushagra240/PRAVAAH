@@ -56,7 +56,8 @@ def health_check():
         "service": "PRAVAAH API",
         "version": "1.0.0",
         "region_loaded": "odisha_coastal",
-        "cell_count": len(simulator.cube_df)
+        "cell_count": len(simulator.cube_df),
+        "cube_last_modified": getattr(simulator, "cube_mtime_iso", None)
     }
 
 @router.get("/cyclone/tracks")

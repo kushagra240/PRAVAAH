@@ -241,16 +241,27 @@ def run_simulation(req: SimulationRequest):
     }
     return sim_res
 
+AI_BRIEF_CACHE: Dict[str, Any] = {}
+
 @router.post("/ai/brief")
 def generate_decision_brief(req: SimulationRequest):
     track = req.track_fix if req.track_fix else DEFAULT_TRACK_FIX
     perts = req.perturbations if req.perturbations else {}
     
+    # Check if baseline request and cache hit
+    is_baseline = (track.get("track_id") == DEFAULT_TRACK_FIX.get("track_id")) and len(perts) == 0
+    cache_key = "yaas_baseline"
+    
+    if is_baseline and cache_key in AI_BRIEF_CACHE:
+        cached_res = AI_BRIEF_CACHE[cache_key].copy()
+        cached_res["cached"] = True
+        return cached_res
+        
     sim_res = simulator.run_simulation(track, perts)
     evidence = evidence_builder.build_evidence_bundle(sim_res, cyclone_name=track.get("name", "Cyclone Forecast"))
     brief = ai_engine.generate_decision_brief(evidence)
     
-    return {
+    res = {
         "evidence_bundle": evidence,
         "brief": brief,
         "provenance_class": brief.get("provenance", "DERIVED"),
@@ -258,8 +269,14 @@ def generate_decision_brief(req: SimulationRequest):
             "evidence_bundle": "DERIVED",
             "narrative": brief.get("provenance", "DERIVED"),
             "citation_validation": "OBSERVED" if brief.get("citation_validated") else "ASSUMPTION"
-        }
+        },
+        "cached": False
     }
+    
+    if is_baseline:
+        AI_BRIEF_CACHE[cache_key] = res
+        
+    return res
 
 @router.post("/advisories/draft")
 def create_draft_advisory(req: AdvisoryCreateRequest):

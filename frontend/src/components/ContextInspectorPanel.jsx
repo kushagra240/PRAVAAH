@@ -269,9 +269,16 @@ export default function ContextInspectorPanel({
               </div>
             )}
 
-            <p className="text-xs text-slate-800 leading-relaxed font-medium bg-white p-2 rounded border border-slate-200">
-              {briefData?.brief?.situation_narrative || "Under baseline forecast, health facilities may lose road access due to coastal storm surge and causeway inundation."}
-            </p>
+            {isSimulating ? (
+              <div className="bg-blue-50/80 p-3 rounded border border-blue-200 text-xs text-blue-900 flex items-center gap-2 font-medium">
+                <RefreshCw className="w-4 h-4 text-blue-600 animate-spin shrink-0" />
+                <span>Generating AI situation brief via Gemini Decision Engine...</span>
+              </div>
+            ) : (
+              <p className="text-xs text-slate-800 leading-relaxed font-medium bg-white p-2 rounded border border-slate-200">
+                {briefData?.brief?.situation_narrative || "Under baseline forecast, health facilities may lose road access due to coastal storm surge and causeway inundation."}
+              </p>
+            )}
 
             <div className="grid grid-cols-2 gap-2 text-xs pt-1">
               <div className="bg-white border border-slate-200 p-2 rounded">
@@ -285,8 +292,11 @@ export default function ContextInspectorPanel({
             </div>
 
             <div className="flex items-center justify-between text-[11px] text-slate-500 pt-1 font-mono border-t border-slate-200">
-              <span className="text-blue-600 hover:underline cursor-pointer">Grounding bundle: {briefData?.evidence_bundle ? Object.keys(briefData.evidence_bundle.evidence_items).length : 6} items</span>
-              <span>Model: <strong className="text-slate-800">Gemini 3.7 Flash</strong></span>
+              <span className="text-blue-600 hover:underline cursor-pointer">
+                Bundle: {briefData?.evidence_bundle ? Object.keys(briefData.evidence_bundle.evidence_items).length : 6} items
+                {briefData?.cached && <span className="ml-1 px-1 py-0.2 bg-blue-100 text-blue-800 rounded text-[9px] font-bold">⚡ CACHED</span>}
+              </span>
+              <span>Model: <strong className="text-slate-800">{briefData?.brief?.model_name || 'Gemini 3.7 Flash'}</strong></span>
             </div>
           </div>
 

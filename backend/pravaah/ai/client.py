@@ -29,11 +29,13 @@ class GeminiDecisionEngine:
     def generate_decision_brief(self, evidence_bundle: Dict[str, Any]) -> Dict[str, Any]:
         """
         Generates situation brief narrative, priority actions, and draft advisory text.
+        Executes against exactly ONE pinned model (settings.GEMINI_MODEL).
+        If the configured model is unavailable or rate-limited, falls cleanly to FALLBACK_DERIVED mode.
         """
         if self.client:
+            import time
+            start_time = time.time()
             try:
-                import time
-                start_time = time.time()
                 prompt = self._build_prompt(evidence_bundle)
                 response = self.client.models.generate_content(
                     model=self.model_name,
@@ -41,7 +43,8 @@ class GeminiDecisionEngine:
                 )
                 elapsed_ms = round((time.time() - start_time) * 1000.0, 1)
                 text = response.text
-                # Parse JSON if output is JSON formatted
+                
+                # Clean codeblock formatting if present
                 if "```json" in text:
                     text = text.split("```json")[1].split("```")[0].strip()
                 elif "```" in text:
@@ -70,11 +73,16 @@ class GeminiDecisionEngine:
                 return parsed
             except Exception as e:
                 error_msg = str(e)
-                logger.warning(f"Gemini API invocation failed ({type(e).__name__}): {error_msg}. Triggering graceful fallback.")
+                logger.warning(f"Gemini API model '{self.model_name}' invocation failed ({type(e).__name__}): {error_msg}. Triggering FALLBACK_DERIVED mode.")
                 fallback = self._generate_fallback_narrative(evidence_bundle)
-                fallback["notice"] = "AI narrative unavailable (API Rate Limit / Connection Error)"
+                fallback["notice"] = f"AI narrative unavailable ({self.model_name} {type(e).__name__})"
                 fallback["error_detail"] = f"{type(e).__name__}: {error_msg[:100]}"
                 return fallback
+                
+        # Deterministic evidence-grounded fallback when client is not initialized
+        fallback = self._generate_fallback_narrative(evidence_bundle)
+        fallback["notice"] = "AI narrative unavailable (No API Key Configured)"
+        return fallback
                 
         # Deterministic evidence-grounded fallback when client is not initialized
         fallback = self._generate_fallback_narrative(evidence_bundle)

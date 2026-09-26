@@ -60,7 +60,7 @@
 | **Surge Height** | Parametric Bathymetric Attenuation (`ParametricSurgeModel`) | `DERIVED` | ADCIRC / SLOSH numerical hydrodynamic model |
 | **Flood Probability** | Heuristic Logit Screening (`HeuristicFloodScreeningModel`) | `ASSUMPTION` | Supervised XGBoost trained on Sentinel-1 SAR change detection inundation labels (§9.4) |
 | **Road Network & Accessibility** | Multi-source Dijkstra Solver (§12.3 3-State Model: `RoadGraphCascadeEngine`) | `DERIVED` (on `OBSERVED` graph) | OSMnx / Geofabrik OpenStreetMap PBF network dump |
-| **AI Situation Brief** | Gemini 3.7 Flash + `CitationValidator` | `DERIVED` / `ASSUMPTION` | Live Gemini 3.7 Flash API key in `.env` |
+| **AI Situation Brief** | Gemini 3.7 Flash + `CitationValidator` | `LIVE_GEMINI` / `FALLBACK_DERIVED` | Competition requirement: Gemini 3.7 Flash. Currently accessible on this API tier: Gemini 3.6 Flash (or 3.7 Flash when quota permits). Model is configured via `GEMINI_MODEL` env var and will use 3.7 Flash automatically once tier access is available. |
 | **Advisory Workflow** | Human-in-the-Loop State Machine + OASIS CAP 1.2 XML | `DERIVED` | SEOC Emergency Gateway Integration |
 
 > **Critical Path Audit Status**: The flood probability model (`HeuristicFloodScreeningModel`) remains the **ONLY** `ASSUMPTION`-tagged component in the critical calculation path. Road network topology (`road_network.json`) is properly intersection-noded (12,813 nodes : 15,544 edges) and health facility locations (`health_facilities.json`) are promoted from `FIXTURE` to `OBSERVED` using verified OpenStreetMap data.

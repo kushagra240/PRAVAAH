@@ -24,7 +24,7 @@ class CitationValidator:
                 
         # 2. Check for fabricated numerical claims near citations
         # e.g. "999,000 people will lose hospital access [EVID_POP_30MIN_LOSS]" where actual evidence value is 184000
-        number_citation_pattern = re.compile(r'([\d,]+(?:\.\d+)?)\s*(?:[a-zA-Z\s,-]{0,80})\s*\[(EVID_[A-Z0-9_]+)\]')
+        number_citation_pattern = re.compile(r'([\d,]+(?:\.\d+)?)\s*(?:[a-zA-Z\s,/\-%–]{0,80})\s*\[(EVID_[A-Z0-9_]+)\]')
         for match in number_citation_pattern.finditer(narrative):
             num_str, ev_id = match.groups()
             if ev_id in evidence_items:

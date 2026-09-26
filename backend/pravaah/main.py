@@ -25,10 +25,12 @@ app.include_router(api_v1_router, prefix=settings.API_V1_STR)
 
 @app.on_event("startup")
 def prewarm_cache():
-    """Pre-warms baseline scenario impact summary and Dijkstra spatial indices on startup."""
+    """Pre-warms baseline scenario impact summary, AI decision brief, and spatial indices on startup."""
     try:
-        from backend.pravaah.api.v1.router import get_run_impact_summary
+        from backend.pravaah.api.v1.router import get_run_impact_summary, generate_decision_brief, SimulationRequest
         get_run_impact_summary("yaas")
+        generate_decision_brief(SimulationRequest())
+        print("[Startup] Pre-warmed baseline scenario impact summary and AI decision brief cache.")
     except Exception as e:
         print(f"Prewarm warning: {e}")
 

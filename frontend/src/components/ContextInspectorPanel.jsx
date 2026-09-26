@@ -1,5 +1,26 @@
 import React, { useState } from 'react';
-import { Sparkles, ArrowRight, ShieldAlert, AlertTriangle, Building2, CheckCircle, FileText, ChevronRight, HelpCircle, Layers, Sliders, RefreshCw, Send } from 'lucide-react';
+import { Sparkles, ArrowRight, ShieldAlert, AlertTriangle, Building2, CheckCircle, CheckCircle2, FileText, ChevronRight, HelpCircle, Layers, Sliders, RefreshCw, Send } from 'lucide-react';
+
+const renderTextWithCitations = (text) => {
+  if (!text) return null;
+  if (typeof text !== 'string') return text;
+  const parts = text.split(/(\[EVID_[A-Z0-9_]+\])/g);
+  return parts.map((part, i) => {
+    if (part.startsWith('[EVID_') && part.endsWith(']')) {
+      const evidId = part.slice(1, -1);
+      return (
+        <span 
+          key={i} 
+          className="ml-1 px-1.5 py-0.5 rounded bg-blue-100 text-blue-900 border border-blue-200 text-[10px] font-mono font-bold hover:bg-blue-200 cursor-pointer inline-flex items-center"
+          title={`Click to inspect ground-truth evidence: ${evidId}`}
+        >
+          {evidId}
+        </span>
+      );
+    }
+    return part;
+  });
+};
 
 export default function ContextInspectorPanel({ 
   currentState = 1, 

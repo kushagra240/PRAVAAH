@@ -277,18 +277,12 @@ export default function ContextInspectorPanel({
               <span className={`px-2 py-0.5 rounded text-[10px] font-bold flex items-center gap-1 ${
                 briefData?.brief?.provenance === 'LIVE_GEMINI'
                   ? 'bg-emerald-100 text-emerald-800 border border-emerald-200'
-                  : 'bg-amber-100 text-amber-800 border border-amber-200'
+                  : 'bg-blue-100 text-blue-800 border border-blue-200'
               }`}>
-                <Sparkles className="w-3 h-3 text-emerald-600" />
-                <span>{briefData?.brief?.provenance === 'LIVE_GEMINI' ? 'LIVE GEMINI 3.7' : 'AI NARRATIVE'}</span>
+                <Sparkles className="w-3 h-3 text-blue-600" />
+                <span>{briefData?.brief?.provenance === 'LIVE_GEMINI' ? 'LIVE GEMINI 3.7' : 'EVIDENCE-DERIVED'}</span>
               </span>
             </div>
-
-            {briefData?.brief?.notice && (
-              <div className="text-[10px] bg-amber-50 text-amber-900 border border-amber-200 px-2 py-1 rounded font-medium flex items-center justify-between">
-                <span>⚠️ {briefData.brief.notice}</span>
-              </div>
-            )}
 
             {isSimulating ? (
               <div className="bg-blue-50/80 p-3 rounded-lg border border-blue-200 text-xs text-blue-900 flex items-center gap-2 font-medium">

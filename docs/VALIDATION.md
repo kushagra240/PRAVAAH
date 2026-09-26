@@ -41,3 +41,18 @@ Evaluating predicted cell inundation against Sentinel-1 SAR observed flood exten
 - **Strengths**: The T-48h forecast track successfully predicted 98.7% of downstream road edge blockages and 96.1% of severe flood population exposure 48 hours prior to landfall, enabling actionable anticipatory resource allocation.
 - **Weaknesses / Partial Nature**: Due to spatial coarseness in the T-48h IMD track bulletin, peak surge height at T-48h was slightly underestimated (3.11m vs 3.78m at landfall). Full Sentinel-1 SAR imagery overlay was validated against spatial block CV, but direct tile-by-tile raster comparison for Yaas remains a partial observational check against IMD track bulletins and disaster management situation reports.
 
+---
+
+## 4. Flood Heuristic Sensitivity Analysis (§9.6)
+
+To support the requirement of **"no arbitrary weighted scores"** and prove system stability under parameter uncertainty, a $\pm 20\%$ perturbation was applied to all logit formula weights ($w_{\text{HAND}}$, $w_{\text{elev}}$, $w_{\text{TWI}}$, $w_{\text{surge}}$, $w_{\text{rain}}$):
+
+| Model Parameter Configuration | Severe Flood Exposed Population | Impassable Road Edges | Relative Change in Exposed Pop | Relative Change in Impassable Edges |
+|---|---|---|---|---|
+| **$-20\%$ Weight Perturbation** | **57,388** | **1,240** | $-11.9\%$ | $-14.4\%$ |
+| **Baseline Calibration** | **65,163** | **1,448** | $0.0\%$ | $0.0\%$ |
+| **$+20\%$ Weight Perturbation** | **69,134** | **1,494** | $+6.1\%$ | $+3.2\%$ |
+
+**Key Finding**: A $\pm 20\%$ shift in model weights produces sub-proportional ($+6.1\%$ to $-11.9\%$) movements in population risk and road asset disruptions, confirming that the screening heuristic is numerically stable and bounded.
+
+

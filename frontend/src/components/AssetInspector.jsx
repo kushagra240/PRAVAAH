@@ -75,80 +75,104 @@ export default function AssetInspector({ simResult, facilities = [], shelters = 
 
       {/* Content List */}
       <div className="space-y-3">
-        {assetType === 'health' && filteredFacilities.map(f => (
-          <div key={f.asset_id} className="glass-panel p-3.5 space-y-2">
-            <div className="flex items-start justify-between">
-              <div>
-                <div className="text-xs font-bold text-gray-100 flex items-center gap-1.5">
-                  <Building2 className="w-4 h-4 text-red-400" />
-                  <span>{f.name}</span>
+        {assetType === 'health' && (
+          filteredFacilities.length > 0 ? (
+            filteredFacilities.map(f => (
+              <div key={f.asset_id || f.name} className="glass-panel p-3.5 space-y-2">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <div className="text-xs font-bold text-gray-100 flex items-center gap-1.5">
+                      <Building2 className="w-4 h-4 text-red-400" />
+                      <span>{f.name || 'Unnamed Facility'}</span>
+                    </div>
+                    <div className="text-[11px] text-gray-400 mt-0.5">
+                      {f.type || 'Health Facility'} · Block: {f.block || 'N/A'} ({f.district || 'N/A'})
+                    </div>
+                  </div>
+                  <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded border ${
+                    (f.status || 'operational') === 'inundated_or_isolated'
+                      ? 'bg-red-950 text-red-400 border-red-800'
+                      : (f.status || 'operational') === 'degraded_access'
+                      ? 'bg-orange-950 text-orange-400 border-orange-800'
+                      : 'bg-emerald-950 text-emerald-400 border-emerald-800'
+                  }`}>
+                    {(f.status || 'operational').replace(/_/g, ' ')}
+                  </span>
                 </div>
-                <div className="text-[11px] text-gray-400 mt-0.5">
-                  {f.type} · Block: {f.block} ({f.district})
+
+                <div className="grid grid-cols-3 gap-2 text-[11px] bg-gray-900/60 p-2 rounded border border-gray-800/80 font-mono text-gray-300">
+                  <div>Beds: <span className="text-gray-100 font-bold">{f.bed_capacity ?? 'N/A'}</span></div>
+                  <div>Generator: <span className={f.backup_generator === 'present' ? 'text-emerald-400' : 'text-red-400'}>{f.backup_generator ?? 'unknown'}</span></div>
+                  <div>Flood P: <span className="text-cyan-400">{typeof f.flood_probability === 'number' ? (f.flood_probability * 100).toFixed(0) : 0}%</span></div>
                 </div>
               </div>
-              <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded border ${
-                f.status === 'inundated_or_isolated'
-                  ? 'bg-red-950 text-red-400 border-red-800'
-                  : f.status === 'degraded_access'
-                  ? 'bg-orange-950 text-orange-400 border-orange-800'
-                  : 'bg-emerald-950 text-emerald-400 border-emerald-800'
-              }`}>
-                {f.status.replace(/_/g, ' ')}
-              </span>
+            ))
+          ) : (
+            <div className="p-6 text-center text-xs text-gray-400 glass-panel">
+              No health facilities found matching "{searchTerm}".
             </div>
+          )
+        )}
 
-            <div className="grid grid-cols-3 gap-2 text-[11px] bg-gray-900/60 p-2 rounded border border-gray-800/80 font-mono text-gray-300">
-              <div>Beds: <span className="text-gray-100 font-bold">{f.bed_capacity}</span></div>
-              <div>Generator: <span className={f.backup_generator === 'present' ? 'text-emerald-400' : 'text-red-400'}>{f.backup_generator}</span></div>
-              <div>Flood P: <span className="text-cyan-400">{(f.flood_probability*100).toFixed(0)}%</span></div>
-            </div>
-          </div>
-        ))}
-
-        {assetType === 'shelters' && filteredShelters.map(s => (
-          <div key={s.asset_id} className="glass-panel p-3.5 flex items-center justify-between">
-            <div className="space-y-1">
-              <div className="text-xs font-bold text-gray-100 flex items-center gap-1.5">
-                <Shield className="w-4 h-4 text-emerald-400" />
-                <span>{s.name}</span>
-              </div>
-              <div className="text-[11px] text-gray-400">
-                Block: {s.block} · Elevation: {s.elevation_m}m
-              </div>
-            </div>
-            <div className="text-right">
-              <div className="text-sm font-bold font-mono text-emerald-400">{s.capacity}</div>
-              <div className="text-[10px] text-gray-400">capacity</div>
-            </div>
-          </div>
-        ))}
-
-        {assetType === 'roads' && filteredEdges.map(e => {
-          const isCut = brokenEdgeSet.has(e.edge_id);
-          return (
-            <div key={e.edge_id} className="glass-panel p-3.5 space-y-2">
-              <div className="flex items-center justify-between">
-                <div className="text-xs font-bold text-gray-100 flex items-center gap-1.5">
-                  <Route className="w-4 h-4 text-purple-400" />
-                  <span>{e.name}</span>
+        {assetType === 'shelters' && (
+          filteredShelters.length > 0 ? (
+            filteredShelters.map(s => (
+              <div key={s.asset_id || s.name} className="glass-panel p-3.5 flex items-center justify-between">
+                <div className="space-y-1">
+                  <div className="text-xs font-bold text-gray-100 flex items-center gap-1.5">
+                    <Shield className="w-4 h-4 text-emerald-400" />
+                    <span>{s.name || 'Unnamed Shelter'}</span>
+                  </div>
+                  <div className="text-[11px] text-gray-400">
+                    Block: {s.block || 'N/A'} · Elevation: {s.elevation_m ?? 'N/A'}m
+                  </div>
                 </div>
-                <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded border ${
-                  isCut 
-                    ? 'bg-red-950 text-red-400 border-red-800'
-                    : 'bg-emerald-950 text-emerald-400 border-emerald-800'
-                }`}>
-                  {isCut ? 'CUT / OVERTOPPED' : 'PASSABLE'}
-                </span>
+                <div className="text-right">
+                  <div className="text-sm font-bold font-mono text-emerald-400">{s.capacity ?? 'N/A'}</div>
+                  <div className="text-[10px] text-gray-400">capacity</div>
+                </div>
               </div>
-              <div className="flex justify-between text-[11px] text-gray-400 font-mono">
-                <span>Highway: {e.highway}</span>
-                <span>Length: {e.length_km} km</span>
-                <span>Causeway: {e.is_causeway ? 'Yes' : 'No'}</span>
-              </div>
+            ))
+          ) : (
+            <div className="p-6 text-center text-xs text-gray-400 glass-panel">
+              No cyclone shelters found matching "{searchTerm}".
             </div>
-          );
-        })}
+          )
+        )}
+
+        {assetType === 'roads' && (
+          filteredEdges.length > 0 ? (
+            filteredEdges.map(e => {
+              const isCut = brokenEdgeSet.has(e.edge_id);
+              return (
+                <div key={e.edge_id || e.name} className="glass-panel p-3.5 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <div className="text-xs font-bold text-gray-100 flex items-center gap-1.5">
+                      <Route className="w-4 h-4 text-purple-400" />
+                      <span>{e.name || 'Unnamed Road'}</span>
+                    </div>
+                    <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded border ${
+                      isCut 
+                        ? 'bg-red-950 text-red-400 border-red-800'
+                        : 'bg-emerald-950 text-emerald-400 border-emerald-800'
+                    }`}>
+                      {isCut ? 'CUT / OVERTOPPED' : 'PASSABLE'}
+                    </span>
+                  </div>
+                  <div className="flex justify-between text-[11px] text-gray-400 font-mono">
+                    <span>Highway: {e.highway || 'local'}</span>
+                    <span>Length: {e.length_km ?? 'N/A'} km</span>
+                    <span>Causeway: {e.is_causeway ? 'Yes' : 'No'}</span>
+                  </div>
+                </div>
+              );
+            })
+          ) : (
+            <div className="p-6 text-center text-xs text-gray-400 glass-panel">
+              No road links found matching "{searchTerm}".
+            </div>
+          )
+        )}
       </div>
     </div>
   );

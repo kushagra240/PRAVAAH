@@ -12,6 +12,8 @@ from backend.pravaah.engines.exposure.spatial_join import ExposureEngine
 from backend.pravaah.engines.vulnerability.index import VulnerabilityEngine
 from backend.pravaah.engines.cascade.road_graph import RoadGraphCascadeEngine
 
+from datetime import datetime, timezone
+
 class ScenarioSimulator:
     """
     Real-time physical impact & scenario simulator.
@@ -20,7 +22,11 @@ class ScenarioSimulator:
     """
     def __init__(self, region_dir: str):
         self.region_dir = region_dir
-        self.cube_df = pd.read_parquet(os.path.join(region_dir, "feature_cube.parquet"))
+        parquet_path = os.path.join(region_dir, "feature_cube.parquet")
+        self.cube_df = pd.read_parquet(parquet_path)
+        mtime = os.path.getmtime(parquet_path)
+        self.cube_mtime_iso = datetime.fromtimestamp(mtime, tz=timezone.utc).isoformat()
+        print(f"[ScenarioSimulator] Loaded feature_cube.parquet: {len(self.cube_df)} cells (last modified {self.cube_mtime_iso})")
         
         with open(os.path.join(region_dir, "health_facilities.json"), "r") as f:
             self.facilities = json.load(f)

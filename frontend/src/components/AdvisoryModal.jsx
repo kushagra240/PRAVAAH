@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import { X, CheckCircle2, Clock, Send, Download, FileCode, ShieldAlert, ArrowRight } from 'lucide-react';
+import { X, CheckCircle2, Clock, Send, Download, FileCode, ShieldAlert, ArrowRight, Lock, AlertTriangle } from 'lucide-react';
 
-export default function AdvisoryModal({ isOpen, onClose }) {
+export default function AdvisoryModal({ isOpen, onClose, currentUser = null }) {
   if (!isOpen) return null;
 
   const [statusStep, setStatusStep] = useState('DRAFT'); // DRAFT, REVIEW, APPROVED, DISPATCHED
   const [advisoryId, setAdvisoryId] = useState(null);
+  const [roleError, setRoleError] = useState(null);
   const [advisoryTitle, setAdvisoryTitle] = useState('PRE-POSITION RESCUE BOATS AT CHANDBALI & PROTECT SANATPUR / TANGI / RAJNAGAR ACCESS');
   const [advisoryContent, setAdvisoryContent] = useState(
     '1. Pre-position 4 inflatable motorboats at Chandbali Staging Depot before T-14h.\n' +
@@ -16,12 +17,24 @@ export default function AdvisoryModal({ isOpen, onClose }) {
   const steps = ['DRAFT', 'REVIEW', 'APPROVED', 'DISPATCHED'];
 
   const handleAdvanceStatus = async () => {
+    setRoleError(null);
     let nextStatus = 'REVIEW';
-    if (statusStep === 'DRAFT') nextStatus = 'REVIEW';
-    else if (statusStep === 'REVIEW') nextStatus = 'APPROVED';
-    else if (statusStep === 'APPROVED') nextStatus = 'DISPATCHED';
+    
+    if (statusStep === 'DRAFT') {
+      nextStatus = 'REVIEW';
+    } else if (statusStep === 'REVIEW') {
+      // GATING CHECK (§20): Only users with role 'APPROVER' can approve advisories
+      if (currentUser?.role !== 'APPROVER') {
+        setRoleError(`Approval Restricted: Only users with the APPROVER role (e.g. R. Mohanty, District Collector) can approve advisories. Active account (${currentUser?.name || 'A. Patnaik'}, ${currentUser?.role || 'ANALYST'}) is restricted.`);
+        return;
+      }
+      nextStatus = 'APPROVED';
+    } else if (statusStep === 'APPROVED') {
+      nextStatus = 'DISPATCHED';
+    }
 
     try {
+      const activeActor = `${currentUser?.name || 'R. Mohanty'} (${currentUser?.title || 'District Collector'})`;
       if (!advisoryId) {
         // 1. Create real draft advisory on backend
         const res = await fetch('/api/v1/advisories/draft', {
@@ -31,7 +44,7 @@ export default function AdvisoryModal({ isOpen, onClose }) {
             title: advisoryTitle,
             content: advisoryContent,
             evidence_ids: ['EVID_POP_30MIN_LOSS', 'EVID_BROKEN_ROAD_COUNT'],
-            author: 'District Collector Officer'
+            author: activeActor
           })
         });
         if (res.ok) {
@@ -43,8 +56,8 @@ export default function AdvisoryModal({ isOpen, onClose }) {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               status: nextStatus,
-              actor: 'District Magistrate',
-              notes: `Status advanced to ${nextStatus}`,
+              actor: activeActor,
+              notes: `Status advanced to ${nextStatus} by ${currentUser?.role || 'User'}`,
               updated_content: advisoryContent
             })
           });
@@ -56,8 +69,8 @@ export default function AdvisoryModal({ isOpen, onClose }) {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             status: nextStatus,
-            actor: 'District Magistrate',
-            notes: `Status advanced to ${nextStatus}`,
+            actor: activeActor,
+            notes: `Status advanced to ${nextStatus} by ${currentUser?.role || 'User'}`,
             updated_content: advisoryContent
           })
         });
@@ -118,6 +131,8 @@ export default function AdvisoryModal({ isOpen, onClose }) {
     a.click();
   };
 
+  const isApprovalBlocked = statusStep === 'REVIEW' && currentUser?.role !== 'APPROVER';
+
   return (
     <div className="fixed inset-0 z-[2000] bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4 select-none">
       <div className="bg-white w-full max-w-xl p-5 rounded-lg border border-slate-300 shadow-xl space-y-4 font-sans text-slate-800">
@@ -159,6 +174,23 @@ export default function AdvisoryModal({ isOpen, onClose }) {
           })}
         </div>
 
+        {/* Role Gating Warning / Error Notice */}
+        {roleError && (
+          <div className="bg-red-50 border border-red-300 p-3 rounded-md text-xs text-red-900 font-medium flex items-start gap-2 animate-fadeIn">
+            <AlertTriangle className="w-4 h-4 text-red-600 shrink-0 mt-0.5" />
+            <div className="leading-snug">{roleError}</div>
+          </div>
+        )}
+
+        {isApprovalBlocked && !roleError && (
+          <div className="bg-amber-50 border border-amber-300 p-2.5 rounded-md text-xs text-amber-900 flex items-center gap-2">
+            <Lock className="w-4 h-4 text-amber-600 shrink-0" />
+            <div>
+              <strong>Role Limitation:</strong> Active account is <strong>{currentUser?.name} ({currentUser?.role})</strong>. You may draft/submit for review, but only an <strong>APPROVER</strong> (e.g. R. Mohanty) can sign approval.
+            </div>
+          </div>
+        )}
+
         {/* Advisory Form */}
         <div className="space-y-3 text-xs">
           <div>
@@ -183,7 +215,8 @@ export default function AdvisoryModal({ isOpen, onClose }) {
 
           <div className="bg-blue-50 border border-blue-200 p-2.5 rounded text-[11px] text-blue-900 space-y-1">
             <div className="font-bold">Human Sign-off & Audit Trail</div>
-            <div>Actor: <strong>R. Mohanty (District Collector Office)</strong></div>
+            <div>Active Signatory: <strong>{currentUser?.name || 'R. Mohanty'} ({currentUser?.title || 'District Office'})</strong></div>
+            <div>Accountability Role: <strong className="font-mono">{currentUser?.role || 'APPROVER'}</strong></div>
             <div>Traceability: Directives linked to Evidence EV-ISOLATED-POP-01 & Hydro Model Run.</div>
           </div>
         </div>
@@ -204,11 +237,22 @@ export default function AdvisoryModal({ isOpen, onClose }) {
             </button>
             <button 
               onClick={handleAdvanceStatus}
-              className="px-4 py-1.5 rounded bg-blue-900 hover:bg-blue-950 text-white font-bold text-xs flex items-center gap-1.5 shadow-xs transition-all"
+              disabled={isApprovalBlocked}
+              className={`px-4 py-1.5 rounded font-bold text-xs flex items-center gap-1.5 shadow-xs transition-all ${
+                isApprovalBlocked
+                  ? 'bg-slate-200 text-slate-400 border border-slate-300 cursor-not-allowed'
+                  : 'bg-blue-900 hover:bg-blue-950 text-white'
+              }`}
             >
-              <Send className="w-3.5 h-3.5" />
+              {isApprovalBlocked ? <Lock className="w-3.5 h-3.5 text-slate-400" /> : <Send className="w-3.5 h-3.5" />}
               <span>
-                {statusStep === 'DRAFT' ? 'Submit for Review' : statusStep === 'REVIEW' ? 'Approve Advisory' : statusStep === 'APPROVED' ? 'Dispatch Alert' : 'Advisory Dispatched ✓'}
+                {statusStep === 'DRAFT' 
+                  ? 'Submit for Review' 
+                  : statusStep === 'REVIEW' 
+                  ? (isApprovalBlocked ? 'Approval Restricted (Role Gate)' : 'Approve Advisory') 
+                  : statusStep === 'APPROVED' 
+                  ? 'Dispatch Alert' 
+                  : 'Advisory Dispatched ✓'}
               </span>
             </button>
           </div>

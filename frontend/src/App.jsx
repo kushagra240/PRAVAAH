@@ -10,8 +10,13 @@ import BottomAnalysisStrip from './components/BottomAnalysisStrip';
 import TimelineBar from './components/TimelineBar';
 import EvidenceModal from './components/EvidenceModal';
 import AdvisoryModal from './components/AdvisoryModal';
+import LoginModal, { DEMO_USERS } from './components/LoginModal';
 
 export default function App() {
+  // Demo User Auth State (§20)
+  const [currentUser, setCurrentUser] = useState(DEMO_USERS[0]); // Default: R. Mohanty (APPROVER)
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+
   // 10 Prompt-Required States Preset Index (Default = 1)
   const [currentState, setCurrentState] = useState(1);
   const [activeNav, setActiveNav] = useState('map');
@@ -189,6 +194,8 @@ export default function App() {
         }}
         currentState={currentState}
         onOpenAdvisoryModal={() => setIsAdvisoryModalOpen(true)}
+        currentUser={currentUser}
+        onOpenLoginModal={() => setIsLoginModalOpen(true)}
       />
 
       {/* Sub-Header Telemetry Strip */}
@@ -283,6 +290,15 @@ export default function App() {
       <AdvisoryModal 
         isOpen={isAdvisoryModalOpen}
         onClose={() => setIsAdvisoryModalOpen(false)}
+        currentUser={currentUser}
+      />
+
+      {/* Demo Role Switcher & Login Gate Modal (§20) */}
+      <LoginModal 
+        isOpen={isLoginModalOpen}
+        onClose={() => setIsLoginModalOpen(false)}
+        currentUser={currentUser}
+        onSelectUser={(user) => setCurrentUser(user)}
       />
     </div>
   );

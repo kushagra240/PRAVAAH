@@ -32,16 +32,26 @@ class GeminiDecisionEngine:
         """
         if self.client:
             try:
+                import time
+                start_time = time.time()
                 prompt = self._build_prompt(evidence_bundle)
                 response = self.client.models.generate_content(
                     model=self.model_name,
                     contents=prompt
                 )
+                elapsed_ms = round((time.time() - start_time) * 1000.0, 1)
                 text = response.text
                 # Parse JSON if output is JSON formatted
                 if "```json" in text:
                     text = text.split("```json")[1].split("```")[0].strip()
+                elif "```" in text:
+                    text = text.split("```")[1].split("```")[0].strip()
                 parsed = json.loads(text)
+                
+                # Token usage metadata
+                usage = getattr(response, "usage_metadata", None)
+                input_tokens = getattr(usage, "prompt_token_count", 0) if usage else 0
+                output_tokens = getattr(usage, "candidates_token_count", 0) if usage else 0
                 
                 # Validate citations
                 is_valid, cleaned_brief, invalid = self.validator.validate_narrative(
@@ -51,12 +61,25 @@ class GeminiDecisionEngine:
                 parsed["situation_narrative"] = cleaned_brief
                 parsed["citation_validated"] = is_valid
                 parsed["provenance"] = "LIVE_GEMINI"
+                parsed["model_name"] = self.model_name
+                parsed["latency_ms"] = elapsed_ms
+                parsed["token_usage"] = {
+                    "input_tokens": input_tokens,
+                    "output_tokens": output_tokens
+                }
                 return parsed
             except Exception as e:
-                logger.warning(f"Gemini API invocation failed/fallback triggered: {e}")
+                error_msg = str(e)
+                logger.warning(f"Gemini API invocation failed ({type(e).__name__}): {error_msg}. Triggering graceful fallback.")
+                fallback = self._generate_fallback_narrative(evidence_bundle)
+                fallback["notice"] = "AI narrative unavailable (API Rate Limit / Connection Error)"
+                fallback["error_detail"] = f"{type(e).__name__}: {error_msg[:100]}"
+                return fallback
                 
-        # Deterministic evidence-grounded fallback
-        return self._generate_fallback_narrative(evidence_bundle)
+        # Deterministic evidence-grounded fallback when client is not initialized
+        fallback = self._generate_fallback_narrative(evidence_bundle)
+        fallback["notice"] = "AI narrative unavailable (No API Key Configured)"
+        return fallback
 
     def _build_prompt(self, evidence: Dict[str, Any]) -> str:
         ev_items = evidence["evidence_items"]

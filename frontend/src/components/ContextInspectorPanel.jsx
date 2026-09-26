@@ -253,11 +253,21 @@ export default function ContextInspectorPanel({
           <div className="bg-slate-50 border border-slate-200 rounded-lg p-3 space-y-2.5">
             <div className="flex items-center justify-between">
               <h3 className="text-sm font-bold text-slate-900 font-sans">What's happening</h3>
-              <span className="px-2 py-0.5 rounded bg-blue-100 text-blue-800 text-[10px] font-bold flex items-center gap-1">
-                <Sparkles className="w-3 h-3 text-blue-600" />
-                <span>{briefData?.brief?.citation_validated ? 'CITATION VERIFIED' : 'AI-ASSISTED'}</span>
+              <span className={`px-2 py-0.5 rounded text-[10px] font-bold flex items-center gap-1 ${
+                briefData?.brief?.provenance === 'LIVE_GEMINI'
+                  ? 'bg-emerald-100 text-emerald-800'
+                  : 'bg-amber-100 text-amber-800'
+              }`}>
+                <Sparkles className="w-3 h-3" />
+                <span>{briefData?.brief?.provenance === 'LIVE_GEMINI' ? 'LIVE GEMINI 3.7' : 'AI NARRATIVE UNAVAILABLE'}</span>
               </span>
             </div>
+
+            {briefData?.brief?.notice && (
+              <div className="text-[10px] bg-amber-50 text-amber-900 border border-amber-200 px-2 py-1 rounded font-medium flex items-center justify-between">
+                <span>⚠️ {briefData.brief.notice}</span>
+              </div>
+            )}
 
             <p className="text-xs text-slate-800 leading-relaxed font-medium bg-white p-2 rounded border border-slate-200">
               {briefData?.brief?.situation_narrative || "Under baseline forecast, health facilities may lose road access due to coastal storm surge and causeway inundation."}

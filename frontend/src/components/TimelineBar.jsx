@@ -117,13 +117,8 @@ export default function TimelineBar({
         </div>
       </div>
 
-      {/* Jump to Landfall & Data Provenance Label */}
+      {/* Jump to Landfall Button */}
       <div className="flex items-center gap-3 shrink-0">
-        <div className="hidden xl:flex items-center gap-1.5 bg-slate-900 border border-slate-800 px-2.5 py-1 rounded text-[10px] font-mono text-slate-400" title="Methodological transparency note">
-          <Clock className="w-3 h-3 text-cyan-500" />
-          <span>DERIVED: NUMERICAL TIME-INTERPOLATION</span>
-        </div>
-
         <button
           onClick={() => handleStepChange(0)}
           className={`px-3 py-1.5 rounded-md text-xs font-bold uppercase tracking-wider transition-all flex items-center gap-1.5 cursor-pointer ${

@@ -55,12 +55,15 @@ export default function Header({
   const [isTrackDropdownOpen, setIsTrackDropdownOpen] = useState(false);
 
   return (
-    <header className="h-[52px] bg-white border-b border-gray-200 px-4 flex items-center justify-between z-30 shrink-0 select-none shadow-xs relative">
-      {/* Brand & Tagline */}
+    <header className="h-[52px] bg-white border-b border-gray-200 px-4 flex items-center justify-between z-[2000] shrink-0 select-none shadow-xs relative">
+      {/* Brand & Tagline with New Custom Logomark */}
       <div className="flex items-center gap-3">
-        <div className="w-8 h-8 rounded-lg bg-[#0F2942] text-white flex items-center justify-center font-bold shadow-xs">
-          <Shield className="w-4 h-4 text-cyan-400" />
-        </div>
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" className="shrink-0 shadow-xs rounded-lg">
+          <rect width="32" height="32" rx="8" fill="#0F2942" />
+          <path d="M 16 6 C 22.075 6 27 10.925 27 17 C 27 21.5 24.2 25.3 20.2 26.8" stroke="#38BDF8" strokeWidth="2.5" strokeLinecap="round" />
+          <path d="M 16 26 C 9.925 26 5 21.075 5 15 C 5 10.5 7.8 6.7 11.8 5.2" stroke="#38BDF8" strokeWidth="2.5" strokeLinecap="round" />
+          <path d="M 13 17 L 16 12 L 19 17 M 16 12 L 16 21" stroke="#FFFFFF" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
         <div>
           <div className="flex items-center gap-2">
             <span className="font-bold text-base tracking-tight text-gray-900 font-sans">PRAVAAH</span>
@@ -89,7 +92,7 @@ export default function Header({
         </button>
 
         {isTrackDropdownOpen && (
-          <div className="absolute top-9 right-2 w-72 bg-white border border-slate-200 rounded-lg shadow-xl z-50 p-2 space-y-1 text-xs">
+          <div className="absolute top-9 right-2 w-72 bg-white border border-slate-200 rounded-lg shadow-xl z-[3000] p-2 space-y-1 text-xs">
             <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider px-2 py-1 font-mono">
               SELECT AUTHORITATIVE CYCLONE REPLAY
             </div>
@@ -141,7 +144,7 @@ export default function Header({
           </button>
 
           {isRegionDropdownOpen && (
-            <div className="absolute right-0 mt-2 w-72 bg-white border border-slate-200 rounded-lg shadow-xl z-50 p-2 space-y-1 text-xs">
+            <div className="absolute right-0 mt-2 w-72 bg-white border border-slate-200 rounded-lg shadow-xl z-[3000] p-2 space-y-1 text-xs">
               <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider px-2 py-1 font-mono">
                 SELECT OPERATIONAL SECTOR
               </div>
@@ -193,7 +196,7 @@ export default function Header({
           </button>
 
           {isNotificationsOpen && (
-            <div className="absolute right-0 mt-2 w-80 bg-white border border-slate-200 rounded-lg shadow-xl z-50 p-3 space-y-2 text-xs">
+            <div className="absolute right-0 mt-2 w-80 bg-white border border-slate-200 rounded-lg shadow-xl z-[3000] p-3 space-y-2 text-xs">
               <div className="flex items-center justify-between border-b border-slate-100 pb-2">
                 <span className="font-bold text-slate-900 font-sans">SYSTEM AUDIT & TELEMETRY LOGS</span>
                 <span className="text-[10px] font-mono text-emerald-700 font-bold bg-emerald-50 px-1.5 py-0.5 rounded">

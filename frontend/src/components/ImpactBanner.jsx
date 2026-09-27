@@ -61,6 +61,16 @@ export default function ImpactBanner({ simResult, impactSummary, isSimulated, ti
           }`}>
             ⏱️ {curr.timeTag}
           </span>
+          {timeStepHours !== 0 ? (
+            <span className="px-2.5 py-0.5 rounded bg-amber-100 text-amber-900 border border-amber-300 text-[10px] font-mono font-bold uppercase tracking-wider flex items-center gap-1 shadow-2xs">
+              <AlertCircle className="w-3 h-3 text-amber-700 shrink-0 animate-pulse" />
+              <span>ASSUMPTION (HEURISTIC TIME-INTERPOLATION)</span>
+            </span>
+          ) : (
+            <span className="px-2.5 py-0.5 rounded bg-emerald-100 text-emerald-900 border border-emerald-300 text-[10px] font-mono font-bold uppercase tracking-wider flex items-center gap-1 shadow-2xs font-semibold">
+              ✓ OBSERVED / DERIVED (PHYSICS ENGINE OUTPUT)
+            </span>
+          )}
           {isSimulated && (
             <span className="px-2 py-0.5 rounded bg-orange-100 text-orange-900 border border-orange-300 text-[10px] font-mono font-bold uppercase tracking-wider animate-pulse">
               ⚡ PERTURBED SCENARIO ACTIVE

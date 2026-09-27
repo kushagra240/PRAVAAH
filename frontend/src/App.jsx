@@ -214,6 +214,7 @@ export default function App() {
         simResult={simResult}
         impactSummary={impactSummary}
         isSimulated={currentState === 7}
+        timeStepHours={timeStepHours}
       />
 
       {/* Main Command Center Viewport Body (3 Columns) */}

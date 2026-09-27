@@ -34,20 +34,23 @@ export default function BottomAnalysisStrip({
 
   return (
     <div className="bg-white border-t border-slate-200 px-4 py-2 flex items-center justify-between gap-4 shrink-0 text-xs select-none shadow-xs">
-      {/* Tab Switchers */}
-      <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-md border border-slate-200 shrink-0">
+      {/* Tab Switchers with Clear Subtitles (Item 4) */}
+      <div className="flex items-center gap-1.5 bg-slate-100 p-1 rounded-md border border-slate-200 shrink-0">
         <button
           onClick={() => {
             setActiveTab('hazard');
             if (onSelectState) onSelectState(1);
           }}
-          className={`px-3 py-1 rounded text-xs font-semibold transition-all cursor-pointer ${
+          className={`px-3 py-1 rounded text-left transition-all cursor-pointer ${
             activeTab === 'hazard' 
               ? 'bg-[#0F2942] text-white shadow-xs' 
               : 'text-slate-600 hover:text-slate-900'
           }`}
         >
-          HAZARD PROFILE
+          <div className="text-xs font-bold font-sans">HAZARD PROFILE</div>
+          <div className={`text-[10px] font-normal leading-none ${activeTab === 'hazard' ? 'text-cyan-300' : 'text-slate-500'}`}>
+            Wind, surge & flood readings
+          </div>
         </button>
 
         <button
@@ -55,13 +58,16 @@ export default function BottomAnalysisStrip({
             setActiveTab('cascade');
             if (onSelectState) onSelectState(8);
           }}
-          className={`px-3 py-1 rounded text-xs font-semibold transition-all cursor-pointer ${
+          className={`px-3 py-1 rounded text-left transition-all cursor-pointer ${
             activeTab === 'cascade'
               ? 'bg-[#0F2942] text-white shadow-xs' 
               : 'text-slate-600 hover:text-slate-900'
           }`}
         >
-          CASCADE ANALYSIS
+          <div className="text-xs font-bold font-sans">CASCADE ANALYSIS</div>
+          <div className={`text-[10px] font-normal leading-none ${activeTab === 'cascade' ? 'text-cyan-300' : 'text-slate-500'}`}>
+            Hospital isolation graph
+          </div>
         </button>
 
         <button
@@ -69,13 +75,16 @@ export default function BottomAnalysisStrip({
             setActiveTab('access');
             if (onSelectState) onSelectState(4);
           }}
-          className={`px-3 py-1 rounded text-xs font-semibold transition-all cursor-pointer ${
+          className={`px-3 py-1 rounded text-left transition-all cursor-pointer ${
             activeTab === 'access'
               ? 'bg-[#0F2942] text-white shadow-xs' 
               : 'text-slate-600 hover:text-slate-900'
           }`}
         >
-          ACCESSIBILITY
+          <div className="text-xs font-bold font-sans">ACCESSIBILITY</div>
+          <div className={`text-[10px] font-normal leading-none ${activeTab === 'access' ? 'text-cyan-300' : 'text-slate-500'}`}>
+            Travel-time access loss
+          </div>
         </button>
       </div>
 

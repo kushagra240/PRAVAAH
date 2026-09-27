@@ -27,13 +27,13 @@ export default function TimelineBar({
               setIsPlaying(false);
               return -12;
             }
-            if (prev === -12) return -6;
-            if (prev === -6) return 0;
+            if (prev <= -12) return -6;
+            if (prev <= -6) return 0;
             if (prev === 0) return 6;
             return 24;
           });
         }
-      }, 2500);
+      }, 1200);
     }
     return () => clearInterval(interval);
   }, [isPlaying, setTimeStepHours]);
@@ -54,7 +54,7 @@ export default function TimelineBar({
             if (setTimeStepHours) setTimeStepHours(prev => Math.max(-12, prev - 6));
           }}
           title="Step Backward"
-          className="p-1.5 rounded hover:bg-slate-800 text-slate-300 hover:text-white transition-all"
+          className="p-1.5 rounded hover:bg-slate-800 text-slate-300 hover:text-white transition-all cursor-pointer"
         >
           <SkipBack className="w-4 h-4" />
         </button>
@@ -62,7 +62,7 @@ export default function TimelineBar({
         <button
           onClick={() => setIsPlaying(!isPlaying)}
           title={isPlaying ? 'Pause Replay' : 'Play Timeline Replay'}
-          className="w-8 h-8 rounded-full bg-cyan-500 hover:bg-cyan-400 text-slate-950 flex items-center justify-center font-bold shadow-sm transition-all"
+          className="w-8 h-8 rounded-full bg-cyan-500 hover:bg-cyan-400 text-slate-950 flex items-center justify-center font-bold shadow-sm transition-all cursor-pointer"
         >
           {isPlaying ? <Pause className="w-4 h-4 fill-slate-950" /> : <Play className="w-4 h-4 fill-slate-950 ml-0.5" />}
         </button>
@@ -72,13 +72,13 @@ export default function TimelineBar({
             if (setTimeStepHours) setTimeStepHours(prev => Math.min(24, prev + 6));
           }}
           title="Step Forward"
-          className="p-1.5 rounded hover:bg-slate-800 text-slate-300 hover:text-white transition-all"
+          className="p-1.5 rounded hover:bg-slate-800 text-slate-300 hover:text-white transition-all cursor-pointer"
         >
           <SkipForward className="w-4 h-4" />
         </button>
       </div>
 
-      {/* Interactive Timeline Scrubber (Matching Prompt #19 Example) */}
+      {/* Interactive Timeline Scrubber */}
       <div className="flex-1 flex items-center gap-4 max-w-3xl">
         <div className="flex-1 relative flex items-center">
           {/* Progress track line */}
@@ -99,6 +99,7 @@ export default function TimelineBar({
                 <button
                   key={s.hours}
                   onClick={() => handleStepChange(s.hours)}
+                  title={s.detail}
                   className={`pointer-events-auto w-3.5 h-3.5 rounded-full border-2 transition-all cursor-pointer ${
                     isCurrent 
                       ? 'bg-cyan-400 border-white scale-125 shadow-md shadow-cyan-400/50' 
@@ -116,13 +117,18 @@ export default function TimelineBar({
         </div>
       </div>
 
-      {/* Jump to Landfall Button */}
+      {/* Jump to Landfall & Data Provenance Label */}
       <div className="flex items-center gap-3 shrink-0">
+        <div className="hidden xl:flex items-center gap-1.5 bg-slate-900 border border-slate-800 px-2.5 py-1 rounded text-[10px] font-mono text-slate-400" title="Methodological transparency note">
+          <Clock className="w-3 h-3 text-cyan-500" />
+          <span>DERIVED: NUMERICAL TIME-INTERPOLATION</span>
+        </div>
+
         <button
           onClick={() => handleStepChange(0)}
-          className={`px-3 py-1.5 rounded-md text-xs font-bold uppercase tracking-wider transition-all flex items-center gap-1.5 ${
+          className={`px-3 py-1.5 rounded-md text-xs font-bold uppercase tracking-wider transition-all flex items-center gap-1.5 cursor-pointer ${
             timeStepHours === 0 
-              ? 'bg-amber-500 text-slate-950 font-extrabold shadow-sm' 
+              ? 'bg-amber-500 text-slate-950 font-extrabold shadow-sm ring-2 ring-amber-400/50' 
               : 'bg-slate-800 hover:bg-slate-700 text-slate-200'
           }`}
         >

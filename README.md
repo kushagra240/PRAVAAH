@@ -21,7 +21,8 @@ Official cyclone bulletins provide precise landfall locations and wind speeds, b
 
 ## Links & Media
 
-- 🌐 **Live Web Application**: [https://pravaah.onrender.com](https://pravaah.onrender.com) *(Hosted on Render Free Tier)*
+- 🌐 **Live Web Application**: [https://pravaah-wvd6.onrender.com](https://pravaah-wvd6.onrender.com)
+  > *Note: free-tier hosting may take 30-60s to respond on first load after inactivity.*
 - 📹 **Demo Video (3 Min)**: `[Link to YouTube / Video Walkthrough]` *(To be added upon recording)*
 - 📑 **Detailed Engineering Specification**: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
 

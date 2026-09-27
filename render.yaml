@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: pravaah
+    env: docker
+    dockerfilePath: ./Dockerfile
+    plan: free
+    region: oregon
+    autoDeploy: true
+    envVars:
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: GEMINI_MODEL
+        value: gemini-3.7-flash
+      - key: DATABASE_URL
+        value: sqlite:///./pravaah.db
+      - key: DEFAULT_REGION
+        value: odisha_coastal
+      - key: H3_RESOLUTION
+        value: "8"

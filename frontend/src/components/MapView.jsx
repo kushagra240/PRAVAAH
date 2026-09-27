@@ -184,6 +184,7 @@ export default function MapView({
         style={{ width: '100%', height: '100%' }}
         zoomControl={false}
       >
+        <MapRecenterController resetMapToken={resetMapToken} />
         {/* OpenStreetMap Standard Free Basemap (Zero API key required) */}
         <TileLayer
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"

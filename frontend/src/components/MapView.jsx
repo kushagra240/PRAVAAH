@@ -1,7 +1,17 @@
-import React, { useState } from 'react';
-import { MapContainer, TileLayer, CircleMarker, Polyline, Marker, Tooltip, Popup, Circle, Polygon } from 'react-leaflet';
+import React, { useState, useEffect } from 'react';
+import { MapContainer, TileLayer, CircleMarker, Polyline, Marker, Tooltip, Popup, Circle, Polygon, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import { AlertTriangle, Info, Clock, Layers } from 'lucide-react';
+
+function MapRecenterController({ resetMapToken }) {
+  const map = useMap();
+  useEffect(() => {
+    if (resetMapToken > 0) {
+      map.flyTo([20.72, 86.85], 9.5, { duration: 1.2 });
+    }
+  }, [resetMapToken, map]);
+  return null;
+}
 
 // Custom Leaflet Icons for crisp 2D EOC Cartography
 const hospitalIcon = new L.DivIcon({
@@ -72,7 +82,8 @@ export default function MapView({
   layers = { cyclone: true, wind: true, flood: true, roads: true, hospitals: true, shelters: true },
   onSelectAsset = null,
   timeStepHours = -6,
-  onSelectRoadBreach = null
+  onSelectRoadBreach = null,
+  resetMapToken = 0
 }) {
   const center = [20.72, 86.85]; // Centered on Kendrapara / Bhadrak / Balasore coast
 

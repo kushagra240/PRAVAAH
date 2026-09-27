@@ -31,17 +31,19 @@ export default function ContextInspectorPanel({
   briefData = null,
   onOpenAdvisoryModal = null,
   onRunScenario = null,
-  isSimulating = false
+  isSimulating = false,
+  activeNav = 'map'
 }) {
   const [perturbations, setPerturbations] = useState({ v_max_multiplier: 1.10, rain_multiplier: 1.20, surge_multiplier: 1.15 });
 
-  // Handle asset click / selection
+  // Handle asset click / selection / nav state
   const isHospitalSelected = currentState === 2 || selectedAsset?.asset_type === 'hospital';
   const isRoadSelected = currentState === 3 || selectedAsset?.asset_type === 'road';
-  const isScenarioState = currentState === 6 || currentState === 7;
-  const isCascadeState = currentState === 8;
-  const isAIBriefState = currentState === 9;
-  const isAdvisoryState = currentState === 10;
+  const isScenarioState = activeNav === 'scenario' || currentState === 6 || currentState === 7;
+  const isRiskState = activeNav === 'risk';
+  const isSheltersState = activeNav === 'shelters';
+  const isRiverState = activeNav === 'river';
+  const isActionsState = activeNav === 'actions';
 
   return (
     <div className="w-[320px] bg-white border-l border-slate-200 flex flex-col shrink-0 overflow-y-auto p-3.5 gap-4 select-none">
@@ -284,6 +286,187 @@ export default function ContextInspectorPanel({
               })()}
             </div>
           </div>
+        </div>
+      ) : isRiskState ? (
+        /* WHO'S AT RISK PANEL */
+        <div className="space-y-4 font-sans">
+          <div className="flex items-center justify-between border-b border-slate-200 pb-2">
+            <div className="flex items-center gap-2">
+              <span className="w-2.5 h-2.5 rounded-full bg-red-600"></span>
+              <span className="text-xs font-bold uppercase tracking-wider text-slate-400 font-mono">WHO'S AT RISK</span>
+            </div>
+          </div>
+
+          <div>
+            <h3 className="text-base font-bold text-slate-900">Population Exposure & Access Loss</h3>
+            <p className="text-xs text-slate-500">Ranked by coastal flood risk & travel time degradation</p>
+          </div>
+
+          <div className="bg-red-50 border border-red-200 rounded-md p-3 space-y-2">
+            <div className="text-[10px] font-bold text-red-700 uppercase font-mono">POPULATION ACCESS DISRUPTION</div>
+            <div className="grid grid-cols-2 gap-2 text-xs font-mono">
+              <div className="bg-white p-2 rounded border border-red-100">
+                <div className="text-[10px] text-slate-400">LOST SUB-30MIN</div>
+                <div className="text-sm font-bold text-red-700">27,465</div>
+              </div>
+              <div className="bg-white p-2 rounded border border-red-100">
+                <div className="text-[10px] text-slate-400">LOST SUB-60MIN</div>
+                <div className="text-sm font-bold text-red-900">31,214</div>
+              </div>
+            </div>
+          </div>
+
+          <div className="space-y-1.5">
+            <div className="text-[10px] font-bold text-slate-400 uppercase font-mono tracking-wider">HIGHEST EXPOSED BLOCKS</div>
+            <div className="space-y-1.5 text-xs">
+              {[
+                { block: 'Balikuda Block', pop: '8,686 people', status: 'CRITICAL' },
+                { block: 'Chandbali Block', pop: '8,024 people', status: 'CRITICAL' },
+                { block: 'Dhamra Coastal Plain', pop: '7,803 people', status: 'HIGH' },
+                { block: 'Bhadrak Sadar', pop: '7,573 people', status: 'HIGH' },
+                { block: 'Erasama Block', pop: '7,573 people', status: 'HIGH' }
+              ].map((b, i) => (
+                <div key={i} className="flex items-center justify-between bg-slate-50 p-2 rounded border border-slate-200">
+                  <div className="font-semibold text-slate-800">{b.block}</div>
+                  <div className="flex items-center gap-1.5 font-mono text-[11px]">
+                    <span className="font-bold text-slate-900">{b.pop}</span>
+                    <span className={`text-[9px] font-bold px-1.5 py-0.2 rounded ${b.status === 'CRITICAL' ? 'bg-red-100 text-red-800' : 'bg-amber-100 text-amber-800'}`}>
+                      {b.status}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <button 
+            onClick={() => onSelectState && onSelectState(2)}
+            className="w-full py-2 bg-[#0F2942] hover:bg-[#163B5F] text-white font-bold text-xs rounded-md shadow-xs transition-all flex items-center justify-center gap-2 cursor-pointer"
+          >
+            <span>Inspect 94 Isolated Facilities &rarr;</span>
+          </button>
+        </div>
+      ) : isSheltersState ? (
+        /* SHELTERS PANEL */
+        <div className="space-y-4 font-sans">
+          <div className="flex items-center justify-between border-b border-slate-200 pb-2">
+            <div className="flex items-center gap-2">
+              <span className="w-2.5 h-2.5 rounded-full bg-emerald-600"></span>
+              <span className="text-xs font-bold uppercase tracking-wider text-slate-400 font-mono">CYCLONE SHELTERS</span>
+            </div>
+          </div>
+
+          <div>
+            <h3 className="text-base font-bold text-slate-900">Shelter Capacity & Readiness</h3>
+            <p className="text-xs text-slate-500">Multi-purpose cyclone shelters across coastal Odisha</p>
+          </div>
+
+          <div className="bg-emerald-50 border border-emerald-200 rounded-md p-3 space-y-1">
+            <div className="text-[10px] font-bold text-emerald-800 uppercase font-mono">TOTAL SHELTER CAPACITY</div>
+            <div className="text-base font-bold text-emerald-950 font-mono-num">4,500 Evacuees (4 Major Hubs)</div>
+            <div className="text-[11px] text-slate-600">Equipped with emergency solar power & water filtration.</div>
+          </div>
+
+          <div className="space-y-1.5">
+            <div className="text-[10px] font-bold text-slate-400 uppercase font-mono tracking-wider">COASTAL SHELTER LOCATIONS</div>
+            <div className="space-y-1.5 text-xs">
+              {[
+                { name: 'Balasore MPCS Hub', cap: '1,500 people', elev: '6.2m elev', status: 'READY' },
+                { name: 'Dhamra Relief Shelter', cap: '1,200 people', elev: '5.8m elev', status: 'READY' },
+                { name: 'Kendrapara Sadar MPCS', cap: '1,000 people', elev: '7.1m elev', status: 'READY' },
+                { name: 'Rajnagar Relief Hub', cap: '800 people', elev: '4.5m elev', status: 'DEGRADED ACCESS' }
+              ].map((s, i) => (
+                <div key={i} className="bg-slate-50 p-2.5 rounded border border-slate-200 space-y-1">
+                  <div className="flex items-center justify-between font-bold text-slate-900">
+                    <span>{s.name}</span>
+                    <span className={`text-[9px] font-bold font-mono px-1.5 py-0.2 rounded ${s.status === 'READY' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}`}>
+                      {s.status}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between text-[11px] text-slate-500 font-mono">
+                    <span>Capacity: {s.cap}</span>
+                    <span>Elevation: {s.elev}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      ) : isRiverState ? (
+        /* RIVER LEVELS PANEL */
+        <div className="space-y-4 font-sans">
+          <div className="flex items-center justify-between border-b border-slate-200 pb-2">
+            <div className="flex items-center gap-2">
+              <span className="w-2.5 h-2.5 rounded-full bg-cyan-600"></span>
+              <span className="text-xs font-bold uppercase tracking-wider text-slate-400 font-mono">RIVER TELEMETRY</span>
+            </div>
+          </div>
+
+          <div>
+            <h3 className="text-base font-bold text-slate-900">River Level Telemetry Stream</h3>
+            <p className="text-xs text-slate-500">Hydrological gauge station network</p>
+          </div>
+
+          <div className="bg-amber-50 border border-amber-300 rounded-md p-3 space-y-2 text-xs">
+            <div className="text-[10px] font-bold text-amber-900 uppercase font-mono flex items-center gap-1">
+              <AlertTriangle className="w-3.5 h-3.5 text-amber-600 shrink-0" />
+              <span>NOT ONBOARDED IN DEMO REGION</span>
+            </div>
+            <p className="text-amber-950 leading-relaxed">
+              Continuous hydrological river gauge streaming telemetry is not onboarded for the Odisha Coastal benchmark sector.
+            </p>
+            <div className="bg-white p-2 rounded border border-amber-200 text-[11px] text-slate-700 font-medium">
+              <strong>Active physics models in this build:</strong>
+              <ul className="list-disc pl-4 pt-1 space-y-0.5">
+                <li>Holland Radial Wind Field Model (1980)</li>
+                <li>Attenuated Coastal Storm Surge Inundation</li>
+                <li>Dijkstra Road Access Cascade Engine</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      ) : isActionsState ? (
+        /* WHAT TO DO PANEL */
+        <div className="space-y-4 font-sans">
+          <div className="flex items-center justify-between border-b border-slate-200 pb-2">
+            <div className="flex items-center gap-2">
+              <span className="w-2.5 h-2.5 rounded-full bg-blue-600"></span>
+              <span className="text-xs font-bold uppercase tracking-wider text-slate-400 font-mono">RECOMMENDED ACTIONS</span>
+            </div>
+          </div>
+
+          <div>
+            <h3 className="text-base font-bold text-slate-900">Operational Priority Actions</h3>
+            <p className="text-xs text-slate-500">Prioritized by lead time before landfall</p>
+          </div>
+
+          <div className="space-y-3">
+            {[
+              { title: "Mobile Medical Units & Supply Lines", desc: "Pre-position watercraft and emergency generators at hub facilities prior to causeway overtopping." },
+              { title: "ODRAF / NDRF Rescue Deployment", desc: "Mobilize heavy clearance and flood rescue teams along primary highway corridors." },
+              { title: "Evacuation to Cyclone Shelters", desc: "Initiate targeted evacuation for 16,710 high-exposure residents in Balikuda & Chandbali." }
+            ].map((a, i) => (
+              <div key={i} className="bg-slate-50 p-3 rounded-md border border-slate-200 space-y-1 text-xs">
+                <div className="font-bold text-slate-900 flex items-center gap-1.5">
+                  <span className="w-4 h-4 rounded-full bg-blue-900 text-white flex items-center justify-center text-[10px] shrink-0 font-mono font-bold">
+                    {i + 1}
+                  </span>
+                  <span>{a.title}</span>
+                </div>
+                <p className="text-slate-600 leading-snug pl-5.5">{a.desc}</p>
+              </div>
+            ))}
+          </div>
+
+          <button 
+            onClick={() => {
+              if (onOpenAdvisoryModal) onOpenAdvisoryModal();
+              if (onSelectState) onSelectState(10);
+            }}
+            className="w-full py-2 bg-[#0F2942] hover:bg-[#163B5F] text-white font-bold text-xs rounded-md shadow-xs transition-all flex items-center justify-center gap-2 cursor-pointer"
+          >
+            <span>Draft Action Advisory Now &rarr;</span>
+          </button>
         </div>
       ) : (
         /* 4. STATE 1 DEFAULT COMMAND CENTER */

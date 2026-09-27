@@ -7,7 +7,8 @@ export default function LeftNavPanel({
   layers, 
   toggleLayer,
   currentState,
-  onSelectState
+  onSelectState,
+  onResetMap
 }) {
   const navItems = [
     { id: 'map', label: 'Map', icon: Map, statePreset: 1 },
@@ -33,9 +34,16 @@ export default function LeftNavPanel({
               key={item.id}
               onClick={() => {
                 setActiveNav(item.id);
-                if (item.statePreset) onSelectState(item.statePreset);
+                if (item.id === 'map') {
+                  if (onResetMap) onResetMap();
+                  if (onSelectState) onSelectState(1);
+                } else if (item.id === 'shelters') {
+                  if (!layers.shelters && toggleLayer) toggleLayer('shelters');
+                } else if (item.statePreset && onSelectState) {
+                  onSelectState(item.statePreset);
+                }
               }}
-              className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-md text-xs font-semibold transition-all ${
+              className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-md text-xs font-semibold transition-all cursor-pointer ${
                 isActive 
                   ? 'bg-[#0F2942] text-white shadow-xs' 
                   : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'

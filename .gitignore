@@ -1,8 +1,25 @@
+# Environment & Secrets
 .env
 *.env
-__pycache__/
-*.pyc
+*.pem
+*.key
+
+# Dependencies & Build Outputs
 node_modules/
+**/node_modules/
 dist/
+**/dist/
+build/
+
+# Python Cache & Databases
+__pycache__/
+/**/__pycache__/
+*.pyc
+*.db
+*.sqlite
 .pytest_cache/
-.ds_store
+
+# System Files
+.DS_Store
+.vscode/
+.idea/

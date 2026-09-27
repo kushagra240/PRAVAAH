@@ -6,6 +6,7 @@ import urllib.parse
 
 BBOX = "19.7,85.7,21.0,87.0"
 
+# NOTE: Fictional placeholder contact header used exclusively for OpenStreetMap Overpass API request rate-limiting etiquette.
 HEADERS = {
     "User-Agent": "PRAVAAH-Disaster-Resilience-Research/1.0 (contact: research@pravaah.gov.in)"
 }

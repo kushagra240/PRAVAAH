@@ -174,6 +174,9 @@ export default function App() {
     }
   };
 
+  // Map view reset trigger
+  const [resetMapToken, setResetMapToken] = useState(0);
+
   return (
     <div className="h-screen w-screen flex flex-col bg-[#EFF3F8] overflow-hidden select-none font-sans">
       {/* State Presets Demo Bar (Only shown when ?demo=true query flag is present) */}
@@ -223,6 +226,7 @@ export default function App() {
           toggleLayer={toggleLayer}
           currentState={currentState}
           onSelectState={handleSelectState}
+          onResetMap={() => setResetMapToken(prev => prev + 1)}
         />
 
         {/* Center Workspace: Hero 2D Map (70-80% Width Flex) */}
@@ -245,6 +249,7 @@ export default function App() {
               setSelectedAsset({ ...road, asset_type: 'road' });
               handleSelectState(3);
             }}
+            resetMapToken={resetMapToken}
           />
         </div>
 
@@ -259,6 +264,7 @@ export default function App() {
           onOpenAdvisoryModal={() => setIsAdvisoryModalOpen(true)}
           onRunScenario={(perts) => runSimulation(selectedTrack, perts)}
           isSimulating={isSimulating}
+          activeNav={activeNav}
         />
       </div>
 
@@ -267,6 +273,7 @@ export default function App() {
         currentState={currentState}
         onSelectState={handleSelectState}
         simResult={simResult}
+        timeStepHours={timeStepHours}
       />
 
       {/* Bottom Interactive Event Timeline */}

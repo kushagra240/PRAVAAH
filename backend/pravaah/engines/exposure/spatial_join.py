@@ -35,6 +35,40 @@ class ExposureEngine:
         pop_severe_flood = int(df[df["flood_severe"]]["population"].sum())
         pop_elevated_flood = int(df[df["flood_elevated"]]["population"].sum())
         pop_surge_flooded = int(df[df["surge_flooded"]]["population"].sum())
+
+        # Surge inundation footprint (> 0 depth)
+        surge_inundated_cells_count = int((df["surge_depth_m"] > 0.0).sum())
+        pop_exposed_surge_gt0 = int(df[df["surge_depth_m"] > 0.0]["population"].sum())
+
+        # Low-lying terrain stats (Open-Meteo elev_mean)
+        total_cells = max(1, len(df))
+        elev_col = df["elev_mean"] if "elev_mean" in df.columns else df["elevation_m"]
+        
+        u2_mask = elev_col < 2.0
+        u5_mask = elev_col < 5.0
+        u10_mask = elev_col < 10.0
+
+        u2_cells = int(u2_mask.sum())
+        u5_cells = int(u5_mask.sum())
+        u10_cells = int(u10_mask.sum())
+
+        low_lying_terrain = {
+            "under_2m": {
+                "cells": u2_cells,
+                "pct_cells": round(100.0 * u2_cells / total_cells, 1),
+                "pop": int(df[u2_mask]["population"].sum())
+            },
+            "under_5m": {
+                "cells": u5_cells,
+                "pct_cells": round(100.0 * u5_cells / total_cells, 1),
+                "pop": int(df[u5_mask]["population"].sum())
+            },
+            "under_10m": {
+                "cells": u10_cells,
+                "pct_cells": round(100.0 * u10_cells / total_cells, 1),
+                "pop": int(df[u10_mask]["population"].sum())
+            }
+        }
         
         # Block-level roll-ups
         block_summary = []
@@ -66,5 +100,8 @@ class ExposureEngine:
             "pop_exposed_elevated_flood": pop_elevated_flood,
             "pop_exposed_high_flood": pop_elevated_flood,
             "pop_exposed_surge": pop_surge_flooded,
+            "surge_inundated_cells_count": surge_inundated_cells_count,
+            "pop_exposed_surge_gt0": pop_exposed_surge_gt0,
+            "low_lying_terrain": low_lying_terrain,
             "block_breakdown": block_summary
         }

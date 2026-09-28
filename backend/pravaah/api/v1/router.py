@@ -210,6 +210,9 @@ def get_run_impact_summary(
         "broken_road_km": broken_km,
         "max_wind_kph": sim_res.get("max_wind_kph", 0.0),
         "peak_surge_m": sim_res.get("peak_surge_m", 0.0),
+        "surge_inundated_cells_count": exposure.get("surge_inundated_cells_count", 0),
+        "surge_inundated_population": exposure.get("pop_exposed_surge_gt0", 0),
+        "low_lying_terrain": exposure.get("low_lying_terrain", {}),
         "provenance_class": "OBSERVED",
         "provenance_breakdown": {
             "cyclone_track": "FORECAST",

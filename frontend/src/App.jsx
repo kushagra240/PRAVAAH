@@ -261,11 +261,13 @@ export default function App() {
           selectedAsset={selectedAsset}
           onClearSelectedAsset={() => setSelectedAsset(null)}
           simResult={simResult}
+          impactSummary={impactSummary}
           briefData={briefData}
           onOpenAdvisoryModal={() => setIsAdvisoryModalOpen(true)}
           onRunScenario={(perts) => runSimulation(selectedTrack, perts)}
           isSimulating={isSimulating}
           activeNav={activeNav}
+          timeStepHours={timeStepHours}
         />
       </div>
 

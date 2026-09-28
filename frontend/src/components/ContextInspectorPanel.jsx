@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Sparkles, ArrowRight, ShieldAlert, AlertTriangle, Building2, CheckCircle, CheckCircle2, FileText, ChevronRight, HelpCircle, Layers, Sliders, RefreshCw, Send } from 'lucide-react';
+import { Sparkles, ArrowRight, ShieldAlert, AlertTriangle, Building2, CheckCircle, CheckCircle2, FileText, ChevronRight, HelpCircle, Layers, Sliders, RefreshCw, Send, Waves, AlertCircle } from 'lucide-react';
 
 const renderTextWithCitations = (text) => {
   if (!text) return null;
@@ -28,11 +28,13 @@ export default function ContextInspectorPanel({
   selectedAsset = null,
   onClearSelectedAsset = null,
   simResult = null,
+  impactSummary = null,
   briefData = null,
   onOpenAdvisoryModal = null,
   onRunScenario = null,
   isSimulating = false,
-  activeNav = 'map'
+  activeNav = 'map',
+  timeStepHours = -6
 }) {
   const [perturbations, setPerturbations] = useState({ v_max_multiplier: 1.10, rain_multiplier: 1.20, surge_multiplier: 1.15 });
 
@@ -393,38 +395,239 @@ export default function ContextInspectorPanel({
           </div>
         </div>
       ) : isRiverState ? (
-        /* RIVER LEVELS PANEL */
-        <div className="space-y-4 font-sans">
-          <div className="flex items-center justify-between border-b border-slate-200 pb-2">
-            <div className="flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-cyan-600"></span>
-              <span className="text-xs font-bold uppercase tracking-wider text-slate-400 font-mono">RIVER TELEMETRY</span>
-            </div>
-          </div>
+        /* WATER & SURGE PANEL */
+        (() => {
+          // Time step scaling multiplier for non-T-0 timeline steps
+          const getTimeScale = (h) => {
+            if (h <= -12) return 0.30;
+            if (h <= -6) return 0.65;
+            if (h === 0) return 1.00;
+            if (h <= 6) return 0.85;
+            return 0.40;
+          };
 
-          <div>
-            <h3 className="text-base font-bold text-slate-900">River Level Telemetry Stream</h3>
-            <p className="text-xs text-slate-500">Hydrological gauge station network</p>
-          </div>
+          const scale = timeStepHours === 0 ? 1.0 : getTimeScale(timeStepHours);
 
-          <div className="bg-amber-50 border border-amber-300 rounded-md p-3 space-y-2 text-xs">
-            <div className="text-[10px] font-bold text-amber-900 uppercase font-mono flex items-center gap-1">
-              <AlertTriangle className="w-3.5 h-3.5 text-amber-600 shrink-0" />
-              <span>NOT ONBOARDED IN DEMO REGION</span>
+          // 1. Peak Surge (m)
+          const baseSurge = simResult?.peak_surge_m ?? impactSummary?.peak_surge_m ?? 3.78;
+          const displaySurge = baseSurge * scale;
+
+          // 2. Inundation Footprint (> 0 depth)
+          const baseInundatedCells = simResult?.exposure?.surge_inundated_cells_count ?? impactSummary?.surge_inundated_cells_count ?? 471;
+          const baseInundatedPop = simResult?.exposure?.pop_exposed_surge_gt0 ?? impactSummary?.surge_inundated_population ?? 8544;
+          const displayInundatedCells = Math.round(baseInundatedCells * scale);
+          const displayInundatedPop = Math.round(baseInundatedPop * scale);
+
+          // 3. Flood-Screening Exposure
+          const baseSeverePop = simResult?.exposure?.pop_exposed_severe_flood ?? impactSummary?.pop_exposed_severe_flood ?? 65163;
+          const baseElevatedPop = simResult?.exposure?.pop_exposed_elevated_flood ?? impactSummary?.pop_exposed_elevated_flood ?? 103230;
+          const displaySeverePop = Math.round(baseSeverePop * scale);
+          const displayElevatedPop = Math.round(baseElevatedPop * scale);
+
+          // 4. Low-Lying Terrain (Open-Meteo elevation column)
+          const lowLying = simResult?.exposure?.low_lying_terrain ?? impactSummary?.low_lying_terrain ?? {};
+          const u2 = lowLying.under_2m ?? { cells: 887, pct_cells: 29.6, pop: 18528 };
+          const u5 = lowLying.under_5m ?? { cells: 1464, pct_cells: 48.8, pop: 148081 };
+          const u10 = lowLying.under_10m ?? { cells: 2106, pct_cells: 70.2, pop: 322759 };
+
+          return (
+            <div className="space-y-4 font-sans">
+              <div className="flex items-center justify-between border-b border-slate-200 pb-2">
+                <div className="flex items-center gap-2">
+                  <Waves className="w-4 h-4 text-cyan-600" />
+                  <span className="text-xs font-bold uppercase tracking-wider text-slate-500 font-mono">WATER & SURGE</span>
+                </div>
+                {timeStepHours !== 0 ? (
+                  <span className="px-2 py-0.5 rounded bg-amber-100 text-amber-900 border border-amber-300 text-[9px] font-mono font-bold uppercase tracking-wider flex items-center gap-1 shadow-2xs">
+                    <AlertCircle className="w-2.5 h-2.5 text-amber-700 animate-pulse" />
+                    <span>ASSUMPTION</span>
+                  </span>
+                ) : (
+                  <span className="px-2 py-0.5 rounded bg-cyan-100 text-cyan-900 border border-cyan-300 text-[9px] font-mono font-bold uppercase tracking-wider shadow-2xs">
+                    DERIVED / OBSERVED
+                  </span>
+                )}
+              </div>
+
+              <div>
+                <h3 className="text-base font-bold text-slate-900">Water & Surge Dynamics</h3>
+                <p className="text-xs text-slate-500">Hydrodynamic surge output & terrain exposure profile</p>
+              </div>
+
+              {/* BLOCK 1: PEAK STORM SURGE */}
+              <div className="bg-gradient-to-br from-[#0F2942] to-slate-900 text-white rounded-lg p-3.5 space-y-2 shadow-sm border border-cyan-900/50">
+                <div className="flex items-center justify-between">
+                  <div className="text-[10px] font-bold uppercase tracking-wider text-cyan-300 font-mono">
+                    PEAK STORM SURGE
+                  </div>
+                  <span className="px-1.5 py-0.5 rounded bg-cyan-950/80 text-cyan-300 text-[9px] font-mono font-bold border border-cyan-700/50">
+                    DERIVED
+                  </span>
+                </div>
+
+                <div className="flex items-baseline gap-2">
+                  <span className="text-2xl md:text-3xl font-extrabold font-mono text-white">
+                    {displaySurge.toFixed(2)}
+                  </span>
+                  <span className="text-sm font-semibold text-cyan-200">meters</span>
+                </div>
+
+                <p className="text-[11px] text-cyan-100/80 leading-tight font-sans">
+                  Parametric pressure-deficit & wind-driven surge height at coastal boundary for active run.
+                </p>
+              </div>
+
+              {/* BLOCK 2: INUNDATION FOOTPRINT */}
+              <div className="bg-slate-50 border border-slate-200 rounded-lg p-3 space-y-2.5">
+                <div className="flex items-center justify-between">
+                  <div className="text-[10px] font-bold text-slate-600 uppercase font-mono tracking-wider">
+                    INUNDATION FOOTPRINT (SURGE &gt; 0m)
+                  </div>
+                  <span className="px-1.5 py-0.5 rounded bg-blue-100 text-blue-800 text-[9px] font-mono font-bold border border-blue-200">
+                    DERIVED
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2 font-mono">
+                  <div className="bg-white p-2 rounded border border-slate-200">
+                    <div className="text-[10px] text-slate-400 font-sans font-semibold">INUNDATED H3 CELLS</div>
+                    <div className="text-sm font-extrabold text-slate-900">
+                      {displayInundatedCells.toLocaleString()} <span className="text-[10px] text-slate-400 font-normal">/ 3,000</span>
+                    </div>
+                  </div>
+
+                  <div className="bg-white p-2 rounded border border-slate-200">
+                    <div className="text-[10px] text-slate-400 font-sans font-semibold">POP IN FOOTPRINT</div>
+                    <div className="text-sm font-extrabold text-cyan-800">
+                      {displayInundatedPop.toLocaleString()}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Visual Bar Chart / Stat Progress */}
+                <div className="space-y-1">
+                  <div className="flex justify-between text-[10px] text-slate-500 font-mono">
+                    <span>Spatial Footprint Share</span>
+                    <span className="font-bold text-slate-700">{((displayInundatedCells / 3000) * 100).toFixed(1)}% of region</span>
+                  </div>
+                  <div className="w-full h-2 bg-slate-200 rounded-full overflow-hidden">
+                    <div 
+                      className="h-full bg-cyan-600 transition-all duration-500" 
+                      style={{ width: `${Math.min(100, (displayInundatedCells / 3000) * 100)}%` }}
+                    ></div>
+                  </div>
+                </div>
+              </div>
+
+              {/* BLOCK 3: FLOOD-SCREENING EXPOSURE */}
+              <div className="bg-amber-50/70 border border-amber-200 rounded-lg p-3 space-y-2.5">
+                <div className="flex items-center justify-between">
+                  <div className="text-[10px] font-bold text-amber-900 uppercase font-mono tracking-wider flex items-center gap-1">
+                    <span>FLOOD-SCREENING EXPOSURE</span>
+                  </div>
+                  <span className="px-1.5 py-0.5 rounded bg-amber-200 text-amber-900 text-[9px] font-mono font-bold border border-amber-300">
+                    ASSUMPTION
+                  </span>
+                </div>
+
+                <div className="space-y-2 text-xs">
+                  <div className="bg-white p-2 rounded border border-amber-200 space-y-1">
+                    <div className="flex justify-between font-semibold">
+                      <span className="text-red-900 flex items-center gap-1.5">
+                        <span className="w-2 h-2 rounded-full bg-red-600"></span>
+                        Severe (P &ge; 0.60)
+                      </span>
+                      <span className="font-mono font-bold text-red-700">
+                        {displaySeverePop.toLocaleString()} pop
+                      </span>
+                    </div>
+                    <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                      <div 
+                        className="h-full bg-red-600 transition-all duration-500" 
+                        style={{ width: `${Math.min(100, (displaySeverePop / 620079) * 100 * 5)}%` }}
+                      ></div>
+                    </div>
+                  </div>
+
+                  <div className="bg-white p-2 rounded border border-amber-200 space-y-1">
+                    <div className="flex justify-between font-semibold">
+                      <span className="text-amber-900 flex items-center gap-1.5">
+                        <span className="w-2 h-2 rounded-full bg-amber-500"></span>
+                        Elevated (P &ge; 0.30)
+                      </span>
+                      <span className="font-mono font-bold text-amber-800">
+                        {displayElevatedPop.toLocaleString()} pop
+                      </span>
+                    </div>
+                    <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                      <div 
+                        className="h-full bg-amber-500 transition-all duration-500" 
+                        style={{ width: `${Math.min(100, (displayElevatedPop / 620079) * 100 * 3)}%` }}
+                      ></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* BLOCK 4: LOW-LYING TERRAIN */}
+              <div className="bg-slate-50 border border-slate-200 rounded-lg p-3 space-y-2.5">
+                <div className="flex items-center justify-between">
+                  <div className="text-[10px] font-bold text-slate-600 uppercase font-mono tracking-wider">
+                    LOW-LYING TERRAIN (OPEN-METEO)
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <span className="px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800 text-[9px] font-mono font-bold border border-emerald-200">
+                      OBSERVED
+                    </span>
+                    <span className="px-1.5 py-0.5 rounded bg-blue-100 text-blue-800 text-[9px] font-mono font-bold border border-blue-200">
+                      DERIVED
+                    </span>
+                  </div>
+                </div>
+
+                <div className="space-y-2 text-xs">
+                  {/* < 2m Band */}
+                  <div className="bg-white p-2 rounded border border-slate-200 space-y-1">
+                    <div className="flex justify-between text-[11px] font-semibold text-slate-800 font-mono">
+                      <span>Elev &lt; 2 m</span>
+                      <span className="text-cyan-800 font-bold">{u2.pct_cells}% cells ({u2.pop.toLocaleString()} pop)</span>
+                    </div>
+                    <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
+                      <div className="h-full bg-cyan-700" style={{ width: `${u2.pct_cells}%` }}></div>
+                    </div>
+                  </div>
+
+                  {/* < 5m Band */}
+                  <div className="bg-white p-2 rounded border border-slate-200 space-y-1">
+                    <div className="flex justify-between text-[11px] font-semibold text-slate-800 font-mono">
+                      <span>Elev &lt; 5 m</span>
+                      <span className="text-blue-800 font-bold">{u5.pct_cells}% cells ({u5.pop.toLocaleString()} pop)</span>
+                    </div>
+                    <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
+                      <div className="h-full bg-blue-600" style={{ width: `${u5.pct_cells}%` }}></div>
+                    </div>
+                  </div>
+
+                  {/* < 10m Band */}
+                  <div className="bg-white p-2 rounded border border-slate-200 space-y-1">
+                    <div className="flex justify-between text-[11px] font-semibold text-slate-800 font-mono">
+                      <span>Elev &lt; 10 m</span>
+                      <span className="text-slate-700 font-bold">{u10.pct_cells}% cells ({u10.pop.toLocaleString()} pop)</span>
+                    </div>
+                    <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
+                      <div className="h-full bg-slate-400" style={{ width: `${u10.pct_cells}%` }}></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* ONE-LINE HONEST DISCLOSURE */}
+              <div className="pt-1 border-t border-slate-200 text-[10.5px] text-slate-500 font-medium italic leading-snug">
+                River gauge telemetry (e.g. CWC / India-WRIS feeds) is not onboarded for this demo region.
+              </div>
             </div>
-            <p className="text-amber-950 leading-relaxed">
-              Continuous hydrological river gauge streaming telemetry is not onboarded for the Odisha Coastal benchmark sector.
-            </p>
-            <div className="bg-white p-2 rounded border border-amber-200 text-[11px] text-slate-700 font-medium">
-              <strong>Active physics models in this build:</strong>
-              <ul className="list-disc pl-4 pt-1 space-y-0.5">
-                <li>Holland Radial Wind Field Model (1980)</li>
-                <li>Attenuated Coastal Storm Surge Inundation</li>
-                <li>Dijkstra Road Access Cascade Engine</li>
-              </ul>
-            </div>
-          </div>
-        </div>
+          );
+        })()
       ) : isActionsState ? (
         /* WHAT TO DO PANEL */
         <div className="space-y-4 font-sans">

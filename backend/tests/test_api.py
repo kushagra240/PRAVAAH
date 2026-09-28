@@ -93,6 +93,14 @@ def test_impact_summary_endpoint():
     assert data["provenance_breakdown"]["road_network"] == "OBSERVED"
     assert data["provenance_breakdown"]["health_facilities"] == "OBSERVED"
     assert data["provenance_breakdown"]["flood_model"] == "ASSUMPTION"
+    assert "surge_inundated_cells_count" in data
+    assert "surge_inundated_population" in data
+    assert "low_lying_terrain" in data
+    assert "under_2m" in data["low_lying_terrain"]
+    assert "under_5m" in data["low_lying_terrain"]
+    assert "under_10m" in data["low_lying_terrain"]
+    assert data["surge_inundated_cells_count"] > 0
+    assert data["surge_inundated_population"] > 0
 
     # Test perturbation via query param changes output
     response_shifted = client.get("/api/v1/runs/yaas/impact-summary?v_max=180.0")

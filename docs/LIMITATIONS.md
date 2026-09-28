@@ -3,7 +3,7 @@
 ---
 
 ## 1. Non-Hydrodynamic Surge Disclaimer
-PRAVAAH uses a **first-order parametric screening surge model** combined with connected hydraulic elevation attenuation on Copernicus GLO-30 DEM.
+PRAVAAH uses a **first-order parametric screening surge model** combined with connected hydraulic elevation attenuation on Open-Meteo Elevation API (Copernicus DEM GLO-90, ~90 m).
 - **NOT** a full 3D hydrodynamic numerical simulation (e.g. ADCIRC, Delft3D-FM, SLOSH).
 - Suitable for rapid relative prioritisation, emergency screening, and anticipatory planning — **not** for structural engineering design or legal flood plain determination.
 
@@ -13,6 +13,7 @@ PRAVAAH uses a **first-order parametric screening surge model** combined with co
 Operational analysis is conducted at **H3 Resolution 8** (~0.46 km² per hexagonal cell).
 - Sub-cell micro-topography smaller than ~460m is averaged.
 - Localized urban drainage blockages or culvert-scale failures below cell resolution are not explicitly resolved.
+- 1 km population is spread over smaller H3 r8 cells, so cell-level population and footprint figures (for example the surge-inundated population) are approximate.
 
 ---
 

@@ -42,7 +42,7 @@ Human authority                        →  approves consequential action (advis
 
 - **Parametric Wind Field**: Holland (1980) radial wind profile model adjusted for translation speed asymmetry across H3 cell centroids.
 - **Flood Susceptibility**: Supervised XGBoost model trained on Sentinel-1 SAR change detection inundation labels for Bay of Bengal cyclones.
-- **Surge Screening**: Peak parametric surge height equation (pressure deficit, radius of maximum winds, approach angle, bathymetry) + connected attenuated bathtub on Copernicus GLO-30 DEM.
+- **Surge Screening**: Peak parametric surge height equation (pressure deficit, radius of maximum winds, approach angle, bathymetry) + connected attenuated bathtub on Open-Meteo Elevation API (Copernicus DEM GLO-90, ~90 m).
 - **Road Network Cascade**: Multi-source Dijkstra shortest-path travel time solver on OpenStreetMap road graph (flooded edge removal $\to$ population & facility isolation).
 - **Gemini Decision Layer**: Configured via `GEMINI_MODEL` (`gemini-3.7-flash`). Reads structured `EvidenceBundle` JSON, generates structured briefs (headline, key_findings, affected_areas, recommended_focus) and draft advisories with machine-checked `evidence_id` citations.
 - **Human-in-the-Loop Workflow**: Draft $\to$ Review $\to$ Approve/Reject $\to$ Hash-chained Audit Log.

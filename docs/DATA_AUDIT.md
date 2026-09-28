@@ -20,12 +20,12 @@
 
 | Dataset | GEE Asset ID / Source | Resolution | Feature Extracted | Provenance |
 |---|---|---|---|---|
-| **Copernicus DEM GLO-30** | `COPERNICUS/DEM/GLO30` | 30 meter | Elevation mean/min, Slope, Surge base | `OBSERVED` |
+| **Open-Meteo Elevation API (Copernicus DEM)** | Open-Meteo API / Copernicus DEM GLO-90 | ~90 meter | Elevation mean/min, Slope, Surge base | `OBSERVED` |
 | **MERIT Hydro** | `MERIT/Hydro/v1_0_1` | 90 meter | HAND (Height Above Nearest Drainage), TWI | `DERIVED` |
 | **JRC Global Surface Water** | `JRC/GSW1_4/GlobalSurfaceWater` | 30 meter | Permanent water occurrence %, Seasonality | `OBSERVED` |
 | **ESA WorldCover v200** | `ESA/WorldCover/v200` | 10 meter | Land cover mode, Manning roughness | `OBSERVED` |
 | **Sentinel-1 SAR GRD** | `COPERNICUS/S1_GRD` | 10 meter | Observed flood extent labels (VV/VH change detection) | `OBSERVED` |
-| **GHSL Population (GHS_POP)** | `JRC/GHSL/P2023A/GHS_POP` | 100 meter | Population density & count per cell | `MODELLED` |
+| **WorldPop 2020 1km Grid** | `ind_ppp_2020_1km_Aggregated.tif` | 1 km | Population density & count per cell | `OBSERVED` |
 
 ---
 

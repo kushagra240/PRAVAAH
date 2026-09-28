@@ -114,8 +114,8 @@ For the complete deep-dive engineering specification, see [docs/ARCHITECTURE.md]
 
 ### Data Sources & GIS Infrastructure
 - **OpenStreetMap (OSM)** — Real coastal Odisha road network graph and critical infrastructure geometry.
-- **Copernicus GLO-30 DEM** — 30m global Digital Elevation Model for coastal inundation screening.
-- **WorldPop** — High-resolution 100m grid population distribution.
+- **Open-Meteo Elevation API (Copernicus DEM)** — ~90 m global Digital Elevation Model (Copernicus DEM GLO-90) for coastal inundation screening.
+- **WorldPop** — WorldPop 2020 1 km aggregated grid population distribution.
 
 ---
 

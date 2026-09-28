@@ -516,6 +516,9 @@ export default function ContextInspectorPanel({
                       style={{ width: `${Math.min(100, (displayInundatedCells / 3000) * 100)}%` }}
                     ></div>
                   </div>
+                  <div className="text-[10px] text-slate-400 font-sans italic pt-1 leading-tight">
+                    Surge footprint counts coastal surge inundation only. Flood-screening exposure also includes rainfall and terrain, so the two figures differ by design.
+                  </div>
                 </div>
               </div>
 

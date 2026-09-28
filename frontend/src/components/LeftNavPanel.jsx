@@ -15,7 +15,7 @@ export default function LeftNavPanel({
     { id: 'risk', label: "Who's at risk", icon: Users, statePreset: 4 },
     { id: 'shelters', label: 'Shelters', icon: Home, statePreset: 1 },
     { id: 'scenario', label: 'Try a scenario', icon: Sliders, statePreset: 6 },
-    { id: 'river', label: 'River levels', icon: Waves, statePreset: 4 },
+    { id: 'river', label: 'Water & surge', icon: Waves, statePreset: 4 },
     { id: 'actions', label: 'What to do', icon: CheckSquare, statePreset: 9 }
   ];
 
